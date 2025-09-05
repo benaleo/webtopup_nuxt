@@ -30,7 +30,7 @@ model Game {
   slug        String   @unique
   name        String
   publisher   String
-  image       String
+  image   String
   description String?
   is_active   Boolean  @default(true)
   deleted_at  DateTime?

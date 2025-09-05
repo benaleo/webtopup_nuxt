@@ -25,7 +25,7 @@
     <div class="mt-8">
       <h2 class="text-lg font-semibold mb-3">Game Populer</h2>
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <GameCard v-for="g in popularGames" :key="g.id" :image="g.image" :name="g.name" :publisher="g.publisher" />
+        <GameCard v-for="g in popularGames" :key="g.id" :image="`${baseUrl}${g.image}`" :name="g.name" :publisher="g.publisher" />
       </div>
     </div>
 
@@ -33,7 +33,7 @@
     <div class="mt-8">
       <h2 class="text-lg font-semibold mb-3">Semua Game</h2>
       <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        <GameCard v-for="g in filteredGames" :key="g.id" :image="g.image" :name="g.name" :publisher="g.publisher" />
+        <GameCard v-for="g in filteredGames" :key="g.id" :image="`${baseUrl}${g.image}`" :name="g.name" :publisher="g.publisher" />
       </div>
     </div>
   </section>
@@ -48,6 +48,9 @@ const activeTab = 'px-3 py-2 text-sm bg-blue-600 text-white'
 const q = ref('')
 const tab = ref<'topup'|'cek'>('topup')
 const invoice = ref('')
+
+const config = useRuntimeConfig()
+const baseUrl = config.public.BASE_URL
 
 const { data: galleryRes } = await useFetch('/api/gallery')
 const gallery = computed(() => galleryRes.value?.items || [])

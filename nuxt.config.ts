@@ -17,5 +17,8 @@ export default defineNuxtConfig({
       // read from process.env.JWT_SECRET
       jwtSecret: process.env.JWT_SECRET,
     },
+    public: {
+      BASE_URL: process.env.BASE_URL,
+    },
   },
 })

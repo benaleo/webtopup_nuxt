@@ -82,9 +82,15 @@
             <label class="block text-sm mb-1">Publisher</label>
             <input v-model="form.publisher" class="w-full border rounded px-2 py-1" />
           </div>
-          <div>
-            <label class="block text-sm mb-1">Image URL</label>
-            <input v-model="form.image" class="w-full border rounded px-2 py-1" />
+          <div class="space-y-2">
+            <label class="block text-sm">Image</label>
+            <div class="flex items-center gap-3">
+              <input type="file" accept="image/*" @change="onPickImage" class="text-sm" />
+              <input v-model="form.image" placeholder="paste path like /uploads/xxx.jpg or full URL" class="flex-1 border rounded px-2 py-1 text-sm" />
+            </div>
+            <div v-if="form.image" class="mt-2">
+              <img :src="previewImage" alt="preview" class="h-20 rounded border object-cover" />
+            </div>
           </div>
           <div>
             <label class="inline-flex items-center gap-2 text-sm">
@@ -108,6 +114,15 @@ const pageSizeOptions = [10, 25, 50, 100]
 const items = ref<any[]>([])
 const meta = reactive({ page: 1, pageSize: 10, total: 0, pageCount: 1 })
 const loading = ref(false)
+
+// Build preview URL for image (supports relative stored path or absolute URL)
+const config = useRuntimeConfig()
+const baseUrl = (config as any).public?.BASE_URL || ''
+const previewImage = computed(() => {
+  const v = (form as any)?.image as string | undefined
+  if (!v) return ''
+  return /^https?:\/\//i.test(v) ? v : `${baseUrl}${v}`
+})
 
 const route = useRoute()
 const router = useRouter()
@@ -134,6 +149,23 @@ async function fetchList() {
     loading.value = false
   }
 }
+
+async function onPickImage(e: Event) {
+  const input = e.target as HTMLInputElement
+  if (!input.files || input.files.length === 0) return
+  const file = input.files[0] as File
+  const fd = new FormData()
+  fd.append('file', file)
+  try {
+    const res: any = await $fetch('/api/cms/upload', { method: 'POST', body: fd })
+    form.image = res.path
+  } catch (err: any) {
+    alert(err?.data?.message || err.message || 'Upload failed')
+  } finally {
+    input.value = ''
+  }
+}
+
 
 function goPage(p: number) { page.value = p }
 
@@ -166,6 +198,10 @@ async function submitForm() {
     if (editing.value && currentId.value) {
       await $fetch(`/api/cms/games/${currentId.value}`, { method: 'PUT', body: { ...form } })
     } else {
+      if (!form.image) {
+        alert('Silakan upload/paste image dahulu')
+        return
+      }
       await $fetch(`/api/cms/games`, { method: 'POST', body: { ...form } })
     }
     showForm.value = false
