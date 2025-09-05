@@ -3,6 +3,7 @@ import { db } from '~~/server/utils/db'
 import { requireAdmin } from '../_auth'
 
 const schema = z.object({
+  game_id: z.string().uuid(),
   name: z.string().min(1),
   value: z.string().min(1),
   price: z.number().min(0),

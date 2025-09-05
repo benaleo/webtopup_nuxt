@@ -38,10 +38,13 @@ model Game {
   created_by  String?
   updated_at  DateTime @updatedAt
   updated_by  String?
+  products    Product[]
 }
 
 model Product {
   id          String   @id @default(uuid())
+  game_id     String
+  game        Game     @relation(fields: [game_id], references: [id], onDelete: Cascade)
   name        String
   value       String
   price       Float
@@ -86,4 +89,14 @@ model Gallery {
   created_by  String?
   updated_at  DateTime @updatedAt
   updated_by  String?
+}
+
+model LogTrafic {
+  id        Int      @id @default(autoincrement())
+  browser   String
+  os        String
+  country   String?
+  ip        String?
+  url       String
+  createdAt DateTime @default(now())
 }

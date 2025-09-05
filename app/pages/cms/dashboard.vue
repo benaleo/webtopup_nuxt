@@ -9,6 +9,7 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ layout: 'cms' })
 import { onMounted } from 'vue'
 
 const user = ref<any>(null)
