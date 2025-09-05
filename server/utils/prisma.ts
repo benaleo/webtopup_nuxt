@@ -8,4 +8,4 @@ const prisma = new PrismaClient({
   datasourceUrl: process.env.DATABASE_URL,
 })
 
-export const db = prisma.$extends(withAccelerate())
+export const edgeDb = prisma.$extends(withAccelerate())

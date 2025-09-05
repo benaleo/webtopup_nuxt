@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Use direct connection for migrations; runtime will override via PrismaClient datasources
+  url      = env("DIRECT_DATABASE_URL")
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  USER
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  username   String   @unique
+  password   String
+  role       Role     @default(USER)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Game {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  publisher   String
+  image       String
+  description String?
+  is_active   Boolean  @default(true)
+  deleted_at  DateTime?
+  created_at  DateTime @default(now())
+  created_by  String?
+  updated_at  DateTime @updatedAt
+  updated_by  String?
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  value       String
+  price       Float
+  is_instant  Boolean  @default(false)
+  is_active   Boolean  @default(true)
+  deleted_at  DateTime?
+  created_at  DateTime @default(now())
+  created_by  String?
+  updated_at  DateTime @updatedAt
+  updated_by  String?
+}
+
+model Transaction {
+  id             String   @id @default(uuid())
+  invoice        String   @unique
+  email          String
+  phone          String
+  voucher        String?
+  voucher_value  Float?
+  product_id     String
+  product_name   String
+  product_price  Float
+  qty            Int
+  payment_id     String?
+  payment_name   String?
+  service_amount Float?
+  total_payment  Float
+  is_approved    Boolean  @default(false)
+  is_success     Boolean  @default(false)
+  reason         String?
+  pdf_url        String?
+}
+
+model Gallery {
+  id          String   @id @default(uuid())
+  orders      Int
+  name        String
+  file_url    String
+  is_active   Boolean  @default(true)
+  deleted_at  DateTime?
+  created_at  DateTime @default(now())
+  created_by  String?
+  updated_at  DateTime @updatedAt
+  updated_by  String?
+}
