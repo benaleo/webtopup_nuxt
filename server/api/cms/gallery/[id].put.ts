@@ -5,7 +5,7 @@ import { requireAdmin } from '../_auth'
 const schema = z.object({
   orders: z.number().int().min(0).optional(),
   name: z.string().min(1).optional(),
-  file_url: z.string().url().optional(),
+  file_url: z.string().min(1).optional(),
   is_active: z.boolean().optional(),
 })
 

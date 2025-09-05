@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+
+/* Hide the default file input */
+input[type="file"] {
+  @apply invisible;
+}
+
+/* Customize the appearance of the file input */
+.custom-file-upload {
+  @apply cursor-pointer border rounded-full px-2 py-1 bg-gray-800 text-white;
+}
+
+/* Show the file name after it has been chosen */
+.custom-file-upload::after {
+  @apply content-['Attach file'] absolute top-0 right-0 mt-2 mr-2 text-xs details-content:attr(data-file-name);
+}
