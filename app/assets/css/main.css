@@ -1,1 +1,4 @@
 @import "tailwindcss";
+
+/* Optional: tweak prose color if needed */
+/* .prose { @apply text-gray-700; } */

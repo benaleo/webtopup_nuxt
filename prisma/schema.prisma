@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Use direct connection for migrations; runtime will override via PrismaClient datasources
+  url      = env("DIRECT_DATABASE_URL")
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  USER
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  username   String   @unique
+  password   String
+  role       Role     @default(USER)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Game {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  publisher   String
+  image   String
+  description String?
+  is_active   Boolean  @default(true)
+  deleted_at  DateTime?
+  created_at  DateTime @default(now())
+  created_by  String?
+  updated_at  DateTime @updatedAt
+  updated_by  String?
+  products    Product[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  game_id     String
+  game        Game     @relation(fields: [game_id], references: [id], onDelete: Cascade)
+  name        String
+  value       String
+  price       Float
+  is_instant  Boolean  @default(false)
+  is_active   Boolean  @default(true)
+  deleted_at  DateTime?
+  created_at  DateTime @default(now())
+  created_by  String?
+  updated_at  DateTime @updatedAt
+  updated_by  String?
+
+  transactions Transaction[]
+}
+
+model Transaction {
+  id             String   @id @default(uuid())
+  invoice        String   @unique
+  email          String
+  phone          String
+  
+  // Relations
+  voucher_id     String?
+  voucher        Voucher? @relation(fields: [voucher_id], references: [id], onDelete: Cascade)
+  
+  // Product relation
+  product_id     String
+  product        Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  
+  // Payment relation
+  payment_id     String
+  payment        PaymentMethod @relation(fields: [payment_id], references: [id], onDelete: Cascade)
+  payment_name   String?
+  
+  // Transaction details
+  product_name   String
+  product_price  Float
+  qty            Int
+  service_amount Float?
+  service_percentage_amount Float?
+  total_payment  Float
+  is_approved    Boolean  @default(false)
+  is_success     Boolean  @default(false)
+  reason         String?
+  pdf_url        String?
+  created_at     DateTime @default(now())
+  
+  // Voucher value
+  voucher_value  Float?
+}
+
+model Gallery {
+  id          String   @id @default(uuid())
+  orders      Int
+  name        String
+  file_url    String
+  is_active   Boolean  @default(true)
+  deleted_at  DateTime?
+  created_at  DateTime @default(now())
+  created_by  String?
+  updated_at  DateTime @updatedAt
+  updated_by  String?
+}
+
+enum PaymentMethodCategory {
+  QRIS
+  E_WALLET
+  VIRTUAL_ACCOUNT
+  STORE
+}
+
+model PaymentMethod {
+  id             String   @id @default(uuid())
+  name           String
+  service_amount Float   @default(0)
+  service_percentage Float   @default(0)
+  image          String?
+  description    String?
+  category       PaymentMethodCategory
+  orders         Int
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  transactions   Transaction[]
+}
+
+enum VoucherType {
+  AMOUNT
+  PERCENTAGE
+}
+
+model Voucher {
+  id          String      @id @default(uuid())
+  name        String
+  amount      Float
+  type        VoucherType
+  valid_at    DateTime
+  valid_until DateTime
+  is_active   Boolean     @default(true)
+  deleted_at  DateTime?
+  created_at  DateTime    @default(now())
+  created_by  String?
+  updated_at  DateTime    @updatedAt
+  updated_by  String?
+
+  transactions Transaction[]
+}
+
+model LogTrafic {
+  id        Int      @id @default(autoincrement())
+  browser   String
+  os        String
+  country   String?
+  ip        String?
+  url       String
+  createdAt DateTime @default(now())
+}

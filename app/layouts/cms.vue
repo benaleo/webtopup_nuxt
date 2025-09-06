@@ -1,0 +1,130 @@
+<template>
+  <div class="min-h-screen bg-gray-50 text-gray-900">
+    <div class="flex">
+      <!-- Sidebar -->
+      <aside
+        class="w-64 hidden md:flex flex-col border-r bg-white min-h-screen sticky top-0"
+      >
+        <div class="px-4 py-4 border-b">
+          <NuxtLink
+            to="/cms/dashboard"
+            class="flex items-center gap-2 font-semibold"
+          >
+            <span
+              class="inline-block w-2 h-2 rounded-full bg-emerald-500"
+            ></span>
+            WebTopup CMS
+          </NuxtLink>
+        </div>
+        <nav class="flex-1 p-2">
+          <ul class="space-y-1 text-sm">
+            <li>
+              <NuxtLink
+                to="/cms/dashboard"
+                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
+                active-class="bg-gray-100 font-medium"
+              >
+                <span>🏠</span>
+                <span>Dashboard</span>
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                to="/cms/gallery"
+                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
+                active-class="bg-gray-100 font-medium"
+              >
+                <span>📸</span>
+                <span>Gallery</span>
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                to="/cms/games"
+                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
+                active-class="bg-gray-100 font-medium"
+              >
+                <span>🎮</span>
+                <span>Game</span>
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                to="/cms/payment-methods"
+                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
+                active-class="bg-gray-100 font-medium"
+              >
+                <span>💰</span>
+                <span>Payment Methods</span>
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                to="/cms/vouchers"
+                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
+                active-class="bg-gray-100 font-medium"
+              >
+                <span>🎁</span>
+                <span>Voucher</span>
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                to="/cms/invoices"
+                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
+                active-class="bg-gray-100 font-medium"
+              >
+                <span>🧾</span>
+                <span>Invoices</span>
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                to="/cms/log-traffic"
+                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
+                active-class="bg-gray-100 font-medium"
+              >
+                <span>📈</span>
+                <span>Log Traffic</span>
+              </NuxtLink>
+            </li>
+          </ul>
+        </nav>
+        <div class="p-3 border-t">
+          <button
+            @click="logout"
+            class="w-full px-3 py-2 rounded bg-gray-900 text-white text-sm"
+          >
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main class="flex-1 min-w-0">
+        <!-- Top bar for mobile -->
+        <div
+          class="md:hidden flex items-center justify-between p-3 border-b bg-white sticky top-0 z-10"
+        >
+          <div class="font-semibold">WebTopup CMS</div>
+          <NuxtLink
+            to="/cms/games"
+            class="text-sm px-2 py-1 bg-gray-100 rounded"
+            >Menu</NuxtLink
+          >
+        </div>
+        <NavbarCms />
+        <slot />
+      </main>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import NavbarCms from '~/components/NavbarCms.vue';
+
+async function logout() {
+  await $fetch("/api/auth/logout", { method: "POST" });
+  await navigateTo("/cms/login");
+}
+</script>

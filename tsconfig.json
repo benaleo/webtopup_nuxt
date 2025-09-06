@@ -1,5 +1,20 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
+  "compilerOptions": {
+    "types": ["nuxt", "node"],
+    "baseUrl": ".",
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "target": "ESNext",
+    "paths": {
+      "#app": [".nuxt/types/app"],
+      "#imports": [".nuxt/imports"],
+      "~/*": ["./*"],
+      "@/*": ["./*"],
+      "~~/*": ["./*"],
+      "@@/*": ["./*"]
+    }
+  },
   "files": [],
   "references": [
     {
