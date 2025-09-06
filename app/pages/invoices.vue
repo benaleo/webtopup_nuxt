@@ -34,9 +34,24 @@
             <p>
               <span class="font-medium">Status:</span> {{ item.is_success ? "Success" : (item.reason === "" || item.reason === null ? "Pending" : "Failed") }}
             </p>
+            <!-- fail reason -->
+            <p v-if="item.reason && !item.is_success">
+              <span class="font-medium">Alasan:</span> {{ item.reason }}
+            </p>
           </div>
         </div>
       </div>
+
+      <!-- inset modal update from websocket -->
+      <teleport to="body">
+        <div v-if="showModal" class="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
+          <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-4">Update Invoice</h2>
+            <p>Invoice {{ item?.invoice }} berhasil diperbarui</p>
+            <button @click="showModal = false" class="mt-4 px-4 py-2 rounded-lg bg-blue-600 text-white">Tutup</button>
+          </div>
+        </div>
+      </teleport>
     </section>
   </ClientOnly>
 </template>
@@ -49,6 +64,8 @@ import { useLogTrafic } from "~/composable/useLogTrafic";
 
 const route = useRoute();
 const invoice = ref<string>((route.query.invoice as string) || "");
+
+const showModal = ref(false)
 
 const { data, pending, error, refresh } = await useFetch("/api/transactions", {
   query: computed(() => ({ invoice: invoice.value })),
@@ -75,6 +92,7 @@ function openStream() {
     es.onmessage = () => {
       // Refresh current invoice data on any update event
       refresh()
+      showModal.value = true
     }
     es.onerror = () => {
       // Reconnect after a short delay
