@@ -4,7 +4,10 @@ import { requireAdmin } from '../_auth'
 
 const schema = z.object({
   name: z.string().min(1),
+  code: z.string().min(1),
   amount: z.number().min(0),
+  stock: z.number().min(0), 
+  minimum: z.number().min(0),
   type: z.enum(['AMOUNT', 'PERCENTAGE']),
   valid_at: z.string().or(z.date()),
   valid_until: z.string().or(z.date()),
@@ -16,7 +19,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const data = schema.parse(body)
   const item = await db.voucher.create({
-    data: { ...data, valid_at: new Date(data.valid_at), valid_until: new Date(data.valid_until), is_active: data.is_active ?? true },
+    data: { ...data, valid_at: new Date(data.valid_at), valid_until: new Date(data.valid_until), is_active: data.is_active ?? true, created_by: (await requireAdmin(event)).username },
   })
   return { item }
 })

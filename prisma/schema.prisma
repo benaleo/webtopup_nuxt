@@ -144,6 +144,8 @@ model Voucher {
   code        String      @unique @default(uuid())
   amount      Float
   type        VoucherType
+  minimum     Float
+  stock       Int
   valid_at    DateTime
   valid_until DateTime
   is_active   Boolean     @default(true)
