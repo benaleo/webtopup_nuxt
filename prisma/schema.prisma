@@ -30,7 +30,7 @@ model Game {
   slug        String   @unique
   name        String
   publisher   String
-  image   String
+  image       String
   description String?
   metadata    Json?
   is_active   Boolean  @default(true)

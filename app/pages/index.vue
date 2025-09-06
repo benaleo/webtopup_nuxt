@@ -70,7 +70,7 @@ const filteredGames = computed(() => {
   );
 });
 
-const popularGames = computed(() => games.value.slice(0, 6));
+const popularGames = computed(() => games.value.filter((g: any) => g.metadata?.is_popular))
 
 function goCheck() {
   if (!invoice.value) return;
