@@ -96,7 +96,7 @@ model Gallery {
 
 enum PaymentMethodCategory {
   QRIS
-  E-WALLET
+  E_WALLET
   VIRTUAL_ACCOUNT
   STORE
 }

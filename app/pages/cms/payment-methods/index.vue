@@ -28,6 +28,7 @@
             <th class="px-3 py-2">Name</th>
             <th class="px-3 py-2">Category</th>
             <th class="px-3 py-2">Biaya Layanan</th>
+            <th class="px-3 py-2">Layanan %</th>
             <th class="px-3 py-2">Active</th>
             <th class="px-3 py-2 w-40">Action</th>
           </tr>
@@ -46,6 +47,7 @@
             </td>
             <td class="px-3 py-2">{{ m.category }}</td>
             <td class="px-3 py-2">{{ currency(m.service_amount) }}</td>
+            <td class="px-3 py-2">{{ Number(m.service_percentage || 0) }}%</td>
             <td class="px-3 py-2">
               <span :class="m.is_active ? 'text-emerald-600' : 'text-gray-400'">{{ m.is_active ? 'Yes' : 'No' }}</span>
             </td>
@@ -57,10 +59,10 @@
             </td>
           </tr>
           <tr v-if="!loading && items.length === 0">
-            <td colspan="7" class="px-3 py-6 text-center text-gray-500">No data</td>
+            <td colspan="8" class="px-3 py-6 text-center text-gray-500">No data</td>
           </tr>
           <tr v-if="loading">
-            <td colspan="7" class="px-3 py-6 text-center text-gray-500">Loading...</td>
+            <td colspan="8" class="px-3 py-6 text-center text-gray-500">Loading...</td>
           </tr>
         </tbody>
       </table>
@@ -98,6 +100,10 @@
             <label class="block text-sm mb-1">Biaya Layanan</label>
             <input v-model.number="form.service_amount" type="number" step="0.01" min="0" class="w-full border rounded px-2 py-1" />
           </div>
+          <div>
+            <label class="block text-sm mb-1">Layanan (%)</label>
+            <input v-model.number="form.service_percentage" type="number" step="0.01" min="0" class="w-full border rounded px-2 py-1" />
+          </div>
           <div class="md:col-span-2">
             <label class="block text-sm mb-1">Deskripsi</label>
             <textarea v-model="form.description" class="w-full border rounded px-2 py-1" rows="2" />
@@ -105,7 +111,9 @@
           <div class="md:col-span-2 space-y-2">
             <label class="block text-sm">Logo</label>
             <div class="flex items-center gap-3">
-              <input type="file" accept="image/*" @change="onPickImage" class="text-sm" />
+              <input ref="fileEl" type="file" accept="image/*" @change="onPickImage" class="text-sm" />
+              <button type="button" @click="fileEl?.click()" class="px-3 py-1 border rounded text-sm">Pilih File</button>
+              <span class="text-xs text-gray-500 truncate max-w-[16rem]" v-if="selectedFileName">{{ selectedFileName }}</span>
             </div>
             <div v-if="form.image" class="mt-2">
               <img :src="resolve(form.image)" alt="preview" class="h-16 rounded border object-contain bg-white p-1" />
@@ -129,6 +137,9 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'cms' })
+
+const fileEl = ref<HTMLInputElement | null>(null)
+const selectedFileName = ref('')
 
 const pageSizeOptions = [10, 25, 50, 100]
 const items = ref<any[]>([])
@@ -172,12 +183,14 @@ function goPage(p: number) { page.value = p }
 const showForm = ref(false)
 const editing = ref(false)
 const currentId = ref<string | null>(null)
-const categories = ['QRIS', 'E-WALLET', 'VIRTUAL_ACCOUNT', 'STORE']
-const form = reactive<{ orders: number; name: string; category: string; service_amount: number; image?: string; description?: string; is_active: boolean }>({
+const categories = ['QRIS', 'E_WALLET', 'VIRTUAL_ACCOUNT', 'STORE'] as const
+type Category = typeof categories[number]
+const form = reactive<{ orders: number; name: string; category: Category; service_amount: number; service_percentage: number; image?: string; description?: string; is_active: boolean }>({
   orders: 0,
   name: '',
   category: categories[0],
   service_amount: 0,
+  service_percentage: 0,
   image: '',
   description: '',
   is_active: true,
@@ -186,7 +199,7 @@ const form = reactive<{ orders: number; name: string; category: string; service_
 function openCreate() {
   editing.value = false
   currentId.value = null
-  Object.assign(form, { orders: meta.total + 1, name: '', category: categories[0], service_amount: 0, image: '', description: '', is_active: true })
+  Object.assign(form, { orders: meta.total + 1, name: '', category: categories[0], service_amount: 0, service_percentage: 0, image: '', description: '', is_active: true })
   showForm.value = true
 }
 
@@ -198,6 +211,7 @@ function openEdit(m: any) {
     name: m.name,
     category: m.category,
     service_amount: m.service_amount,
+    service_percentage: m.service_percentage || 0,
     image: m.image || '',
     description: m.description || '',
     is_active: m.is_active,
@@ -240,6 +254,7 @@ async function onPickImage(e: Event) {
   try {
     const res: any = await $fetch('/api/cms/upload', { method: 'POST', body: fd })
     form.image = res.path
+    selectedFileName.value = file.name
   } catch (err: any) {
     alert(err?.data?.message || err.message || 'Upload failed')
   } finally {
