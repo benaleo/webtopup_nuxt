@@ -62,15 +62,14 @@ model Transaction {
   invoice        String   @unique
   email          String
   phone          String
-  user_id        String?
-  server_id      String?
   voucher        String?
   voucher_value  Float?
   product_id     String
   product_name   String
   product_price  Float
   qty            Int
-  payment_id     String?
+  payment_id     PaymentMethod
+  payment        PaymentMethod @relation(fields: [payment_id], references: [id], onDelete: Cascade)
   payment_name   String?
   service_amount Float?
   total_payment  Float
@@ -113,6 +112,8 @@ model PaymentMethod {
   is_active      Boolean  @default(true)
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
+
+  transactions   Transaction[]
 }
 
 enum VoucherType {

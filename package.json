@@ -14,6 +14,7 @@
     "db:push": "bunx prisma db push",
     "db:push:direct": "bunx prisma db push --url \"$env:DIRECT_DATABASE_URL\"",
     "db:studio": "bunx prisma studio",
+    "db:clear:transactions": "bun prisma/clear-transactions.ts",
     "seed": "bun prisma/seed.ts"
   },
   "dependencies": {
