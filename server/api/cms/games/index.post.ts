@@ -19,8 +19,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const data = schema.parse(body)
 
-  const prisma = db()
-  const item = await prisma.game.create({
+  const item = await db.game.create({
     data: {
       slug: data.slug as string,
       name: data.name as string,

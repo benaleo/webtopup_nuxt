@@ -16,8 +16,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const data = schema.parse(body)
 
-  const prisma = db()
-  const item = await prisma.product.create({
+  const item = await db.product.create({
     data: {
       ...data,
       is_instant: data.is_instant ?? false,

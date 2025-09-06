@@ -17,8 +17,7 @@ export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const body = await readBody(event)
   const data = schema.parse(body)
-  const prisma = db()
-  const item = await prisma.paymentMethod.create({
+  const item = await db.paymentMethod.create({
     data: { ...data, is_active: data.is_active ?? true },
   })
   return { item }

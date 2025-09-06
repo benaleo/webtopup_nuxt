@@ -21,8 +21,6 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const data = schema.parse(body)
 
-  const prisma = db()
-  
   // Only include fields that are actually provided in the request
   const updateData: any = { ...data }
   
@@ -34,7 +32,7 @@ export default defineEventHandler(async (event) => {
   // Always update the updated_by field
   updateData.updated_by = user.username
 
-  const item = await prisma.game.update({
+  const item = await db.game.update({
     where: { id },
     data: updateData,
   })

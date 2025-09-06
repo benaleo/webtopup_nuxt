@@ -14,8 +14,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id') as string
   const body = await readBody(event)
   const data = schema.parse(body)
-  const prisma = db()
-  const item = await prisma.gallery.update({
+  const item = await db.gallery.update({
     where: { id },
     data: { ...data, updated_by: user.username },
   })

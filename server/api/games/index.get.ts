@@ -2,7 +2,6 @@ import { db } from '~~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const { q } = getQuery(event)
-  const prisma = db()
 
   const where: any = { is_active: true, deleted_at: null }
   if (typeof q === 'string' && q.trim().length) {
@@ -12,7 +11,7 @@ export default defineEventHandler(async (event) => {
     ]
   }
 
-  const games = await prisma.game.findMany({
+  const games = await db.game.findMany({
     where,
     orderBy: { created_at: 'desc' },
   })

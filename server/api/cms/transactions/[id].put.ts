@@ -18,10 +18,17 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const data = schema.parse(body)
 
-  const prisma = db()
-  const item = await prisma.transaction.update({
+  const item = await db.transaction.update({
     where: { id },
-    data,
+    data: {
+      is_approved: data.is_approved,
+      is_success: data.is_success,
+      reason: data.reason,
+      payment_id: data.payment_id ?? undefined,
+      payment_name: data.payment_name ?? undefined,
+      service_amount: data.service_amount ?? undefined,
+      pdf_url: data.pdf_url ?? undefined,
+    },
   })
   return { item }
 })

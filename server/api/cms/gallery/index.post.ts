@@ -13,8 +13,7 @@ export default defineEventHandler(async (event) => {
   const user = await requireAdmin(event)
   const body = await readBody(event)
   const data = schema.parse(body)
-  const prisma = db()
-  const item = await prisma.gallery.create({
+  const item = await db.gallery.create({
     data: {
       ...data,
       is_active: data.is_active ?? true,
