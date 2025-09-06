@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 import { useFetch } from "#app";
 import { useLogTrafic } from "~/composable/useLogTrafic";
@@ -62,4 +62,45 @@ function onSearch() {
 }
 
 useLogTrafic()
+
+// SSE: auto-refresh when transaction is updated from CMS
+let es: EventSource | null = null
+
+function openStream() {
+  closeStream()
+  const inv = invoice.value?.trim()
+  if (!inv) return
+  try {
+    es = new EventSource(`/api/transactions/stream?invoice=${encodeURIComponent(inv)}`)
+    es.onmessage = () => {
+      // Refresh current invoice data on any update event
+      refresh()
+    }
+    es.onerror = () => {
+      // Reconnect after a short delay
+      closeStream()
+      setTimeout(() => openStream(), 2000)
+    }
+  } catch {
+    // ignore
+  }
+}
+
+function closeStream() {
+  try { es?.close() } catch {}
+  es = null
+}
+
+onMounted(() => {
+  if (invoice.value) openStream()
+})
+
+watch(invoice, () => {
+  // Re-open stream for new invoice
+  openStream()
+})
+
+onBeforeUnmount(() => {
+  closeStream()
+})
 </script>
