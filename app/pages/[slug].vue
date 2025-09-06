@@ -156,7 +156,7 @@
                           <div class="mt-1 font-semibold">
                             {{ currency(cardTotal(pm)) }}
                           </div>
-                          <div class="text-[10px] text-gray-400">Otomatis</div>
+                          <div class="text-[10px] text-gray-400">{{ pm.is_instant ? 'Instant' : '' }}</div>
                         </div>
                       </div>
                     </button>
