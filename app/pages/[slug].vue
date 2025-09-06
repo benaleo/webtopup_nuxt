@@ -469,6 +469,8 @@ async function submit() {
         product_name: selectedProduct.value.name,
         product_price: selectedProduct.value.price,
         qty: qty.value,
+
+        game_id: selectedProduct.value.game_id,
         
         // Payment info
         payment_id: payment_id.value,
