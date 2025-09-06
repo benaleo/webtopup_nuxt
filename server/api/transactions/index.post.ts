@@ -57,34 +57,78 @@ export default defineEventHandler(async (event) => {
   const baseAmount = product.price * data.qty
   const serviceAmount = payment.service_amount || 0
   const servicePctAmount = baseAmount * ((payment.service_percentage || 0) / 100)
-  const voucherValue = data.voucher_value || 0
-  const computedTotal = Math.max(0, baseAmount + serviceAmount + servicePctAmount - voucherValue)
+  const totalBefore = baseAmount + serviceAmount + servicePctAmount
 
+  // Handle voucher: verify and compute discount; if valid, decrement stock atomically
   const invoice = genInvoice()
-  const trx = await db.transaction.create({
-    data: {
-      invoice,
-      email: data.email,
-      phone: data.phone,
+  const result = await db.$transaction(async (tx) => {
+    let appliedVoucherValue = 0
+    let voucherId: string | undefined = undefined
+    let voucherType: 'AMOUNT' | 'PERCENTAGE' | null = null
 
-      // Product
-      product_id: product.id,
-      product_name: product.name,
-      product_price: product.price,
-      qty: data.qty,
+    if (data.voucher_code) {
+      const now = new Date()
+      // +7 hours
+      now.setHours(now.getHours() + 7)
+      const voucher = await tx.voucher.findFirst({
+        where: {
+          code: data.voucher_code,
+          is_active: true,
+          deleted_at: null as any,
+          valid_at: { lte: now },
+          valid_until: { gte: now },
+          stock: { gt: 0 },
+        },
+      })
+      if (!voucher) {
+        throw createError({ statusCode: 400, message: 'Voucher tidak valid atau stok habis' })
+      }
+      if (typeof voucher.minimum === 'number' && totalBefore < voucher.minimum) {
+        throw createError({ statusCode: 400, message: 'Belum memenuhi minimum transaksi untuk voucher' })
+      }
+      // Compute discount
+      const rawDiscount = voucher.type === 'AMOUNT' ? voucher.amount : (totalBefore * voucher.amount) / 100
+      appliedVoucherValue = Math.ceil(Math.min(rawDiscount, totalBefore))
+      voucherId = voucher.id
+      voucherType = voucher.type
 
-      // Payment
-      payment_id: payment.id,
-      payment_name: payment.name,
-      service_amount: serviceAmount,
-      service_percentage_amount: servicePctAmount,
-      total_payment: computedTotal,
+      // Decrement stock
+      await tx.voucher.update({ where: { id: voucher.id }, data: { stock: { decrement: 1 } } })
+    }
 
-      // Voucher: we only store the value; linking by code is not supported in schema
-      voucher_value: voucherValue,
-      // voucher_id can be set here if you later resolve voucher_code -> voucher.id
-    },
+    const now = new Date()
+    now.setHours(now.getHours() + 7)
+
+    const trx = await tx.transaction.create({
+      data: {
+        invoice,
+        email: data.email,
+        phone: data.phone,
+
+        // Product
+        product_id: product.id,
+        product_name: product.name,
+        product_price: product.price,
+        qty: data.qty,
+
+        // Payment
+        payment_id: payment.id,
+        payment_name: payment.name,
+        service_amount: voucherType === 'AMOUNT' ? data.voucher_value : 0,
+        service_percentage_amount: voucherType === 'PERCENTAGE' ? data.voucher_value : 0,
+        total_payment: data.total_payment,
+
+        // Voucher info
+        voucher_id: voucherId,
+        voucher_value: appliedVoucherValue || 0,
+
+        // other
+        created_at: now,
+      },
+    })
+
+    return trx
   })
 
-  return { item: trx }
+  return { success: true, item: result }
 })

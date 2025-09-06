@@ -15,22 +15,25 @@
     "db:push:direct": "bunx prisma db push --url \"$env:DIRECT_DATABASE_URL\"",
     "db:studio": "bunx prisma studio",
     "db:clear:transactions": "bun prisma/clear-transactions.ts",
+    "db:clear:vouchers": "bun prisma/clear-vouchers.ts",
     "seed": "bun prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.16.1",
     "@prisma/extension-accelerate": "^1.1.0",
-    "@tailwindcss/vite": "^4.1.13",
     "@tailwindcss/typography": "^0.5.15",
+    "@tailwindcss/vite": "^4.1.13",
     "@types/bcryptjs": "^3.0.0",
+    "@vueup/vue-quill": "^1.2.0",
     "bcryptjs": "^2.4.3",
     "jose": "^5.8.0",
     "nuxt": "^4.1.0",
+    "sonner": "^2.0.7",
     "swiper": "^11.1.10",
     "tailwindcss": "^4.1.13",
     "vue": "^3.5.20",
     "vue-router": "^4.5.1",
-    "@vueup/vue-quill": "^1.2.0",
+    "vue-sonner": "^2.0.8",
     "zod": "^3.23.8"
   },
   "devDependencies": {

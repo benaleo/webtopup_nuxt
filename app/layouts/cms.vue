@@ -114,7 +114,9 @@
           >
         </div>
         <NavbarCms />
-        <slot />
+        <ClientOnly>
+          <slot />
+        </ClientOnly>
       </main>
     </div>
   </div>

@@ -24,6 +24,8 @@
         <thead class="bg-gray-50">
           <tr class="text-left">
             <th class="px-3 py-2">Name</th>
+            <th class="px-3 py-2">Code</th>
+            <th class="px-3 py-2">Stock</th>
             <th class="px-3 py-2">Amount</th>
             <th class="px-3 py-2">Type</th>
             <th class="px-3 py-2">Valid At</th>
@@ -37,6 +39,8 @@
             <td class="px-3 py-2">
               <div class="font-medium">{{ v.name }}</div>
             </td>
+            <td class="px-3 py-2">{{ v.code }}</td>
+            <td class="px-3 py-2">{{ v.stock }}</td>
             <td class="px-3 py-2">{{ v.type === 'AMOUNT' ? currency(v.amount) : v.amount + '%' }}</td>
             <td class="px-3 py-2">{{ v.type }}</td>
             <td class="px-3 py-2">{{ formatDate(v.valid_at) }}</td>
@@ -75,9 +79,13 @@
       <div class="bg-white rounded shadow w-full max-w-2xl">
         <div class="px-4 py-3 border-b font-semibold">{{ editing ? 'Edit Voucher' : 'Tambah Voucher' }}</div>
         <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div class="md:col-span-2">
+          <div>
             <label class="block text-sm mb-1">Nama</label>
             <input v-model="form.name" class="w-full border rounded px-2 py-1" />
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Kode</label>
+            <input v-model="form.code" class="w-full border rounded px-2 py-1" />
           </div>
           <div>
             <label class="block text-sm mb-1">Tipe</label>
@@ -88,6 +96,14 @@
           <div>
             <label class="block text-sm mb-1">Amount</label>
             <input v-model.number="form.amount" type="number" step="0.01" min="0" class="w-full border rounded px-2 py-1" />
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Minimum</label>
+            <input v-model.number="form.minimum" type="number" step="0.01" min="0" class="w-full border rounded px-2 py-1" />
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Stock</label>
+            <input v-model.number="form.stock" type="number" step="0" min="0" class="w-full border rounded px-2 py-1" />
           </div>
           <div>
             <label class="block text-sm mb-1">Valid At</label>
@@ -113,6 +129,8 @@
 </template>
 
 <script setup lang="ts">
+import { toast } from 'vue-sonner'
+
 definePageMeta({ layout: 'cms' })
 
 const pageSizeOptions = [10, 25, 50, 100]
@@ -153,9 +171,12 @@ const currentId = ref<string | null>(null)
 const types = ['AMOUNT', 'PERCENTAGE']
 
 // we'll bind datetime-local as local string and convert to ISO on submit
-const form = reactive<{ name: string; amount: number; type: string; valid_at: string; valid_until: string; is_active: boolean }>({
+const form = reactive<{ name: string; code: string; amount: number; stock: number; minimum: number; type: string; valid_at: string; valid_until: string; is_active: boolean }>({
   name: '',
+  code: '',
   amount: 0,
+  stock: 0,
+  minimum: 0,
   type: types[0],
   valid_at: localNowInput(),
   valid_until: localNowInput(1),
@@ -165,7 +186,7 @@ const form = reactive<{ name: string; amount: number; type: string; valid_at: st
 function openCreate() {
   editing.value = false
   currentId.value = null
-  Object.assign(form, { name: '', amount: 0, type: types[0], valid_at: localNowInput(), valid_until: localNowInput(1), is_active: true })
+  Object.assign(form, { name: '', code: randomString(8), amount: 0, minimum: 0, type: types[0], valid_at: localNowInput(), valid_until: localNowInput(1), is_active: true })
   showForm.value = true
 }
 
@@ -174,7 +195,10 @@ function openEdit(v: any) {
   currentId.value = v.id
   Object.assign(form, {
     name: v.name,
+    code: v.code,
     amount: v.amount,
+    stock: v.stock,
+    minimum: v.minimum,
     type: v.type,
     valid_at: toLocalInput(v.valid_at),
     valid_until: toLocalInput(v.valid_until),
@@ -189,7 +213,10 @@ async function submitForm() {
   try {
     const payload = {
       name: form.name,
+      code: form.code,
       amount: Number(form.amount || 0),
+      stock: Number(form.stock || 0),
+      minimum: Number(form.minimum || 0),
       type: form.type,
       valid_at: toISO(form.valid_at),
       valid_until: toISO(form.valid_until),
@@ -197,13 +224,15 @@ async function submitForm() {
     }
     if (editing.value && currentId.value) {
       await $fetch(`/api/cms/vouchers/${currentId.value}`, { method: 'PUT', body: payload })
+      toast.success(`Voucher "${form.name}" berhasil diperbarui`)
     } else {
       await $fetch(`/api/cms/vouchers`, { method: 'POST', body: payload })
+      toast.success(`Voucher "${form.name}" berhasil ditambahkan`)
     }
     showForm.value = false
     fetchList()
   } catch (e: any) {
-    alert(e?.data?.message || e.message || 'Error')
+    toast.error(e?.data?.message || e.message || 'Error')
   }
 }
 
@@ -212,8 +241,9 @@ async function onDelete(v: any) {
   try {
     await $fetch(`/api/cms/vouchers/${v.id}`, { method: 'DELETE' })
     fetchList()
+    toast.success(`Voucher \"${v.name}\" berhasil dihapus`)
   } catch (e: any) {
-    alert(e?.data?.message || e.message || 'Error')
+    toast.error(e?.data?.message || e.message || 'Error')
   }
 }
 
@@ -244,4 +274,5 @@ function localNowInput(addHours = 0) {
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
   return now.toISOString().slice(0,16)
 }
+
 </script>

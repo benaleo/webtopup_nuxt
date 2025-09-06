@@ -1,24 +1,36 @@
-import { z } from 'zod'
+import { datetimeRegex, z } from 'zod'
 import { db } from '~~/server/utils/db'
 
-const schema = z.object({ code: z.string().min(1), productId: z.string().min(1), qty: z.number().int().min(1) })
+const schema = z.object({ code: z.string().min(1), totalBefore: z.number().nonnegative() })
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { code, productId, qty } = schema.parse(body)
+  const { code, totalBefore } = schema.parse(body)
+  // +7 hours
   const now = new Date()
+  now.setHours(now.getHours() + 7)
 
   const voucher = await db.voucher.findFirst({
-    where: { name: code, is_active: true, deleted_at: null, valid_at: { lte: now }, valid_until: { gte: now } },
+    where: {
+      code,
+      is_active: true,
+      deleted_at: null as any,
+      valid_at: { lte: now },
+      valid_until: { gte: now },
+      stock: { gt: 0 },
+    },
   })
-  if (!voucher) return { applied: false, amount: 0 }
+  if (!voucher) return { applied: false, amount: 0, type: null, message: 'Voucher tidak valid atau stok habis.' }
 
-  // Optional: additional validation based on product or qty can be added here
+  if (typeof voucher.minimum === 'number' && totalBefore < voucher.minimum) {
+    return { applied: false, amount: 0, type: voucher.type, message: 'Belum memenuhi minimum transaksi. silahkan tambah sampai minimun transaksi ' + voucher.minimum }
+  }
+
   let discount = 0
   if (voucher.type === 'AMOUNT') discount = voucher.amount
-  else if (voucher.type === 'PERCENTAGE') {
-    const product = await db.product.findUnique({ where: { id: productId } })
-    if (product) discount = (product.price * qty) * (voucher.amount / 100)
-  }
-  return { applied: true, amount: discount, voucher: { code: voucher.name, type: voucher.type, value: voucher.amount } }
+  else if (voucher.type === 'PERCENTAGE') discount = (totalBefore * voucher.amount) / 100
+
+  discount = Math.min(discount, totalBefore)
+  return { applied: true, amount: discount, type: voucher.type, message: 'Voucher berhasil diterapkan.' }
 })
+

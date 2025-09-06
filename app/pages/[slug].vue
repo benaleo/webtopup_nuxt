@@ -188,8 +188,9 @@
                 Terapkan
               </button>
             </div>
-            <div v-if="voucherApplied" class="mt-2 text-sm text-emerald-700">
-              Voucher diterapkan: -{{ currency(voucher_value) }}
+            <div v-if="voucherApplied" class="mt-2 text-sm text-emerald-700 flex items-center gap-3">
+              <span>Voucher diterapkan: -{{ currency(voucher_value) }}</span>
+              <button @click="removeVoucher" class="text-rose-600 underline">Hapus</button>
             </div>
           </div>
 
@@ -265,6 +266,7 @@
 </template>
 
 <script setup lang="ts">
+import { toast } from 'vue-sonner'
 const route = useRoute();
 const slug = route.params.slug as string;
 
@@ -368,22 +370,51 @@ onMounted(async () => {
 const voucherCode = ref("");
 const voucher_value = ref(0);
 const voucherApplied = ref(false);
+const voucher_type = ref<'AMOUNT' | 'PERCENTAGE' | null>(null)
 
 async function applyVoucher() {
   if (!selectedProduct.value) {
-    alert("Pilih nominal dahulu");
+    toast.error("Pilih nominal dahulu");
     return;
   }
-  const res: any = await $fetch("/api/vouchers/apply", {
-    method: "POST",
-    body: {
-      code: voucherCode.value,
-      productId: selectedProduct.value.id,
-      qty: qty.value,
-    },
-  });
-  voucher_value.value = res.amount || 0;
-  voucherApplied.value = !!res.applied;
+  if (!selectedPayment.value) {
+    toast.error("Pilih metode pembayaran dahulu");
+    return;
+  }
+  // Hitung total sebelum voucher (base + service amount + service percentage)
+  const baseAmount = (selectedProduct.value?.price || 0) * (qty.value || 1)
+  const serviceAmount = selectedPayment.value?.service_amount || 0
+  const servicePercentage = selectedPayment.value?.service_percentage || 0
+  const servicePercentageAmount = (baseAmount * servicePercentage) / 100
+  const totalBefore = baseAmount + serviceAmount + servicePercentageAmount
+
+  try {
+    const res: any = await $fetch("/api/vouchers/apply", {
+      method: "POST",
+      body: { code: voucherCode.value, totalBefore },
+    });
+    if (!res?.applied) {
+      voucherApplied.value = false
+      voucher_value.value = 0
+      voucher_type.value = null
+      toast.error(res?.message || "Voucher tidak valid")
+      return
+    }
+    voucher_type.value = res.type || null
+    voucher_value.value = Math.ceil(res.amount || 0)
+    voucherApplied.value = true
+    toast.success(res?.message || "Voucher berhasil diterapkan")
+  } catch (e: any) {
+    toast.error(e?.data?.message || e?.message || "Gagal menerapkan voucher")
+  }
+}
+
+function removeVoucher() {
+  voucherApplied.value = false
+  voucher_value.value = 0
+  voucher_type.value = null
+  voucherCode.value = ''
+  toast.success('Voucher dibatalkan')
 }
 
 // Step 6: contact
@@ -423,7 +454,11 @@ async function submit() {
     const serviceAmount = selectedPayment.value?.service_amount || 0;
     const servicePercentage = selectedPayment.value?.service_percentage || 0;
     const servicePercentageAmount = (baseAmount * servicePercentage) / 100;
-    const totalPayment = baseAmount + serviceAmount + servicePercentageAmount - (voucher_value.value || 0);
+    const totalPaymentBeforeVoucher = baseAmount + serviceAmount + servicePercentageAmount;
+
+    // Voucher value already computed and ceiled from applyVoucher
+    const amountVoucher = Math.max(0, voucher_value.value || 0);
+    const totalPayment = Math.max(0, totalPaymentBeforeVoucher - amountVoucher);
 
     const res: any = await $fetch("/api/transactions", {
       method: "POST",
@@ -443,7 +478,7 @@ async function submit() {
         
         // Voucher info
         voucher_code: voucherApplied.value ? voucherCode.value : undefined,
-        voucher_value: voucher_value.value || 0,
+        voucher_value: amountVoucher,
         
         // User info
         email: email.value,
@@ -452,9 +487,12 @@ async function submit() {
         server_id: server_id.value,
       },
     });
-    if (res?.invoice) {
-      navigateTo({ path: "/invoices", query: { invoice: res.invoice } });
+
+    if (res?.success) {
+      toast.success("Transaksi berhasil dibuat");
+      navigateTo({ path: "/invoices", query: { invoice: res.item.invoice } });
     }
+
   } catch (e: any) {
     alert(e?.data?.message || e.message || "Gagal membuat transaksi");
   } finally {
