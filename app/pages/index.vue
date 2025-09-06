@@ -38,6 +38,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { useFetch, navigateTo } from "#app";
+import { useLogTrafic } from "~/composable/useLogTrafic";
 const tabCls = "px-3 py-2 text-sm";
 const activeTab = "px-3 py-2 text-sm bg-blue-600 text-white";
 
@@ -78,4 +79,6 @@ function goCheck() {
 }
 
 definePageMeta({ layout: "default" });
+
+useLogTrafic()
 </script>

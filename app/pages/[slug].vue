@@ -267,6 +267,7 @@
 
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
+import { useLogTrafic } from '~/composable/useLogTrafic';
 const route = useRoute();
 const slug = route.params.slug as string;
 
@@ -507,6 +508,8 @@ function currency(n: number) {
     maximumFractionDigits: 0,
   }).format(n);
 }
+
+useLogTrafic()
 </script>
 
 <style scoped>
