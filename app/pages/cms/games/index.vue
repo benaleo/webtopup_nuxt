@@ -201,6 +201,22 @@
               <input type="checkbox" v-model="form.is_active" /> Active
             </label>
           </div>
+
+          <!-- Metadata Editor -->
+          <div class="pt-2">
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-medium">Metadata (opsional)</label>
+              <button type="button" @click="addMetaPair" class="px-2 py-1 text-xs rounded border">+ Tambah Attribute</button>
+            </div>
+            <div class="space-y-2">
+              <div v-for="(pair, idx) in metadataPairs" :key="idx" class="flex items-center gap-2">
+                <input v-model="pair.key" placeholder="key" class="flex-1 border rounded px-2 py-1 text-sm" />
+                <input v-model="pair.value" placeholder="value" class="flex-1 border rounded px-2 py-1 text-sm" />
+                <button type="button" @click="removeMetaPair(idx)" class="px-2 py-1 text-xs border rounded">Hapus</button>
+              </div>
+              <div v-if="!metadataPairs.length" class="text-xs text-gray-500">Belum ada metadata. Klik "Tambah Attribute" untuk menambah.</div>
+            </div>
+          </div>
         </div>
         <div class="px-4 py-3 border-t flex justify-end gap-2">
           <button @click="closeForm" class="px-3 py-2 border rounded">
@@ -316,7 +332,27 @@ const form = reactive({
   image: "",
   description: "",
   is_active: true,
-});
+})
+
+// Metadata editor state
+type MetaPair = { key: string; value: string }
+const metadataPairs = ref<MetaPair[]>([])
+
+function addMetaPair() {
+  metadataPairs.value.push({ key: '', value: '' })
+}
+function removeMetaPair(idx: number) {
+  metadataPairs.value.splice(idx, 1)
+}
+function buildMetadataObject(): Record<string, any> | undefined {
+  const obj: Record<string, any> = {}
+  for (const { key, value } of metadataPairs.value) {
+    const k = String(key || '').trim()
+    if (!k) continue
+    obj[k] = value
+  }
+  return Object.keys(obj).length ? obj : undefined
+}
 
 function openCreate() {
   editing.value = false;
@@ -329,6 +365,7 @@ function openCreate() {
     description: "",
     is_active: true,
   });
+  metadataPairs.value = []
   showForm.value = true;
 }
 
@@ -343,6 +380,12 @@ function openEdit(g: any) {
     description: g.description,
     is_active: g.is_active,
   });
+  const metaObj = (g as any).metadata as Record<string, any> | null | undefined
+  if (metaObj && typeof metaObj === 'object') {
+    metadataPairs.value = Object.entries(metaObj).map(([k, v]) => ({ key: String(k), value: String(v as any) }))
+  } else {
+    metadataPairs.value = []
+  }
   showForm.value = true;
 }
 
@@ -352,17 +395,18 @@ function closeForm() {
 
 async function submitForm() {
   try {
+    const metadata = buildMetadataObject()
     if (editing.value && currentId.value) {
       await $fetch(`/api/cms/games/${currentId.value}`, {
         method: "PUT",
-        body: { ...form },
+        body: { ...form, metadata },
       });
     } else {
       if (!form.image) {
         alert("Silakan upload/paste image dahulu");
         return;
       }
-      await $fetch(`/api/cms/games`, { method: "POST", body: { ...form } });
+      await $fetch(`/api/cms/games`, { method: "POST", body: { ...form, metadata } });
     }
     showForm.value = false;
     fetchList();

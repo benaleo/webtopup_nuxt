@@ -45,6 +45,7 @@
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useFetch } from "#app";
+import { useLogTrafic } from "~/composable/useLogTrafic";
 
 const route = useRoute();
 const invoice = ref<string>((route.query.invoice as string) || "");
@@ -59,4 +60,6 @@ const item = computed(() => data.value?.item);
 function onSearch() {
   refresh();
 }
+
+useLogTrafic()
 </script>

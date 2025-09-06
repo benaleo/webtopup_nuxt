@@ -13,6 +13,7 @@ const schema = z.object({
   ]).optional().nullable(),
   description: z.string().nullable().optional(),
   is_active: z.boolean().optional(),
+  metadata: z.record(z.any()).nullable().optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -38,3 +39,4 @@ export default defineEventHandler(async (event) => {
   })
   return { item }
 })
+
