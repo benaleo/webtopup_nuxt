@@ -20,26 +20,34 @@ function endOfMonth() {
   return new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999)
 }
 
+// Very simple in-memory cache with 60s TTL
+const cache: Record<string, { data: any; ts: number }> = {}
+const TTL = 60 * 1000
+
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
 
-  async function topLinks(range: { gte: Date; lte: Date }) {
-    const rows = await db.logTrafic.groupBy({
-      by: ['url'],
-      where: {
-        createdAt: { gte: range.gte, lte: range.lte },
-      } as any,
-      _count: { _all: true },
-      // Order by count of the grouped field (url)
-      orderBy: { _count: { url: 'desc' } },
-      take: 5,
-    })
-    // Return url and count
-    return rows.map(r => ({ url: r.url, count: r._count._all }))
+  async function topLinks(key: string, range: { gte: Date; lte: Date }) {
+    const now = Date.now()
+    const ck = `${key}:${range.gte.toISOString()}:${range.lte.toISOString()}`
+    const cached = cache[ck]
+    if (cached && now - cached.ts < TTL) return cached.data
+
+    const rows: Array<{ url: string; cnt: number }> = await (db as any).$queryRaw`
+      SELECT "url", COUNT(*)::int AS cnt
+      FROM "LogTrafic"
+      WHERE "createdAt" BETWEEN ${range.gte} AND ${range.lte}
+      GROUP BY "url"
+      ORDER BY COUNT(*) DESC
+      LIMIT 5
+    `
+    const data = rows.map(r => ({ url: r.url, count: r.cnt }))
+    cache[ck] = { data, ts: now }
+    return data
   }
 
-  const daily = await topLinks({ gte: startOfToday(), lte: endOfToday() })
-  const monthly = await topLinks({ gte: startOfMonth(), lte: endOfMonth() })
+  const daily = await topLinks('daily', { gte: startOfToday(), lte: endOfToday() })
+  const monthly = await topLinks('monthly', { gte: startOfMonth(), lte: endOfMonth() })
 
   return { daily, monthly }
 })
