@@ -70,6 +70,9 @@ model Transaction {
   // Relations
   voucher_id     String?
   voucher        Voucher? @relation(fields: [voucher_id], references: [id], onDelete: Cascade)
+
+  // Game
+  game_id        String?
   
   // Product relation
   product_id     String

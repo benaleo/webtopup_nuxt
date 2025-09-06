@@ -6,9 +6,7 @@ const schema = z.object({ code: z.string().min(1), totalBefore: z.number().nonne
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { code, totalBefore } = schema.parse(body)
-  // +7 hours
   const now = new Date()
-  now.setHours(now.getHours() + 7)
 
   const voucher = await db.voucher.findFirst({
     where: {
