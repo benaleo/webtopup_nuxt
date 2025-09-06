@@ -51,7 +51,7 @@
             <td class="px-3 py-2">{{ t.phone }}</td>
             <td class="px-3 py-2">{{ t.product_name }} (x{{ t.qty }})</td>
             <td class="px-3 py-2 text-right">{{ formatCurrency(t.total_payment) }}</td>
-            <td class="px-3 py-2">{{ t.payment_name || t.payment?.name }}</td>
+            <td class="px-3 py-2">{{ t.payment_name?.toUpperCase() || t.payment?.name?.toUpperCase() }}</td>
             <td class="px-3 py-2 text-center">
               <span
                 class="px-2 py-0.5 rounded text-xs font-medium"
