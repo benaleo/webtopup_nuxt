@@ -39,12 +39,11 @@ export default defineEventHandler(async (event) => {
   const raw = await readBody(event)
   const data = schema.parse(raw)
 
-  const prisma = db()
 
   // Validate product and payment exist and are active
   const [product, payment] = await Promise.all([
-    prisma.product.findUnique({ where: { id: data.product_id } }),
-    prisma.paymentMethod.findUnique({ where: { id: data.payment_id } }),
+    db.product.findUnique({ where: { id: data.product_id } }),
+    db.paymentMethod.findUnique({ where: { id: data.payment_id } }),
   ])
 
   if (!product || !product.is_active) {
@@ -62,7 +61,7 @@ export default defineEventHandler(async (event) => {
   const computedTotal = Math.max(0, baseAmount + serviceAmount + servicePctAmount - voucherValue)
 
   const invoice = genInvoice()
-  const trx = await prisma.transaction.create({
+  const trx = await db.transaction.create({
     data: {
       invoice,
       email: data.email,

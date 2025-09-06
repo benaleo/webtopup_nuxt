@@ -2,8 +2,7 @@ import { db } from '~~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   try {
-    const prisma = db()
-    const items = await prisma.gallery.findMany({
+    const items = await db.gallery.findMany({
       where: { is_active: true, deleted_at: null },
       orderBy: { orders: 'asc' },
     })

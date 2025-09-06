@@ -4,7 +4,6 @@ import { requireAdmin } from '../_auth'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const prisma = db()
   const q = getQuery(event)
   const page = Math.max(parseInt((q.page as string) || '1', 10), 1)
   const pageSize = Math.min(Math.max(parseInt((q.pageSize as string) || '10', 10), 1), 100)
@@ -13,8 +12,8 @@ export default defineEventHandler(async (event) => {
   const where = gameId ? { game_id: gameId } : {}
 
   const [total, items] = await Promise.all([
-    prisma.product.count({ where: where as any }),
-    prisma.product.findMany({
+    db.product.count({ where: where as any }),
+    db.product.findMany({
       where: where as any,
       orderBy: { created_at: 'desc' },
       skip,

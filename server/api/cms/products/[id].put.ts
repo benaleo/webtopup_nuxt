@@ -16,8 +16,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const data = schema.parse(body)
 
-  const prisma = db()
-  const item = await prisma.product.update({
+  const item = await db.product.update({
     where: { id },
     data: {
       ...data,

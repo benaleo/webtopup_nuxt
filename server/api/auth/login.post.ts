@@ -12,8 +12,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { username, password } = schema.parse(body)
 
-  const prisma = db()
-  const user = await prisma.user.findUnique({ where: { username } })
+  const user = await db.user.findUnique({ where: { username } })
   if (!user || !user.is_active) {
     throw createError({ statusCode: 401, message: 'Invalid credentials' })
   }

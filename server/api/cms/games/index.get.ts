@@ -3,15 +3,14 @@ import { requireAdmin } from '../_auth'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const prisma = db()
   const q = getQuery(event)
   const page = Math.max(parseInt((q.page as string) || '1', 10), 1)
   const pageSize = Math.min(Math.max(parseInt((q.pageSize as string) || '10', 10), 1), 100)
   const skip = (page - 1) * pageSize
 
   const [total, items] = await Promise.all([
-    prisma.game.count(),
-    prisma.game.findMany({
+    db.game.count(),
+    db.game.findMany({
       orderBy: { created_at: 'desc' },
       skip,
       take: pageSize,
