@@ -64,6 +64,7 @@ export default defineEventHandler(async (event) => {
   const result = await db.$transaction(async (tx) => {
     let appliedVoucherValue = 0
     let voucherId: string | undefined = undefined
+    let voucherType: 'AMOUNT' | 'PERCENTAGE' | null = null
 
     if (data.voucher_code) {
       const now = new Date()
@@ -89,12 +90,14 @@ export default defineEventHandler(async (event) => {
       const rawDiscount = voucher.type === 'AMOUNT' ? voucher.amount : (totalBefore * voucher.amount) / 100
       appliedVoucherValue = Math.ceil(Math.min(rawDiscount, totalBefore))
       voucherId = voucher.id
+      voucherType = voucher.type
 
       // Decrement stock
       await tx.voucher.update({ where: { id: voucher.id }, data: { stock: { decrement: 1 } } })
     }
 
-    const computedTotal = Math.max(0, totalBefore - appliedVoucherValue)
+    const now = new Date()
+    now.setHours(now.getHours() + 7)
 
     const trx = await tx.transaction.create({
       data: {
@@ -111,13 +114,16 @@ export default defineEventHandler(async (event) => {
         // Payment
         payment_id: payment.id,
         payment_name: payment.name,
-        service_amount: serviceAmount,
-        service_percentage_amount: servicePctAmount,
-        total_payment: computedTotal,
+        service_amount: voucherType === 'AMOUNT' ? data.voucher_value : 0,
+        service_percentage_amount: voucherType === 'PERCENTAGE' ? data.voucher_value : 0,
+        total_payment: data.total_payment,
 
         // Voucher info
         voucher_id: voucherId,
         voucher_value: appliedVoucherValue || 0,
+
+        // other
+        created_at: now,
       },
     })
 

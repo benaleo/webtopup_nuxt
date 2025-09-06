@@ -455,9 +455,10 @@ async function submit() {
     const servicePercentage = selectedPayment.value?.service_percentage || 0;
     const servicePercentageAmount = (baseAmount * servicePercentage) / 100;
     const totalPaymentBeforeVoucher = baseAmount + serviceAmount + servicePercentageAmount;
+
     // Voucher value already computed and ceiled from applyVoucher
-    const amountVoucher = voucher_value.value || 0;
-    const totalPayment = totalPaymentBeforeVoucher - amountVoucher;
+    const amountVoucher = Math.max(0, voucher_value.value || 0);
+    const totalPayment = Math.max(0, totalPaymentBeforeVoucher - amountVoucher);
 
     const res: any = await $fetch("/api/transactions", {
       method: "POST",
@@ -477,7 +478,7 @@ async function submit() {
         
         // Voucher info
         voucher_code: voucherApplied.value ? voucherCode.value : undefined,
-        voucher_value: voucher_value.value || 0,
+        voucher_value: amountVoucher,
         
         // User info
         email: email.value,
