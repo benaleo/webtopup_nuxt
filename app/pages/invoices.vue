@@ -25,7 +25,7 @@
             <p><span class="font-medium">Email:</span> {{ item.email }}</p>
             <p><span class="font-medium">Phone:</span> {{ item.phone }}</p>
             <p>
-              <span class="font-medium">Produk:</span> {{ item.product_name }}
+              <span class="font-medium">Produk:</span> {{ item.product_name }} x {{ item.qty }} qty orders
             </p>
             <p>
               <span class="font-medium">Total:</span> Rp
@@ -34,21 +34,38 @@
             <p>
               <span class="font-medium">Status:</span> {{ item.is_success ? "Success" : (item.reason === "" || item.reason === null ? "Pending" : "Failed") }}
             </p>
+            <!-- fail reason -->
+            <p v-if="item.reason && !item.is_success">
+              <span class="font-medium">Alasan:</span> {{ item.reason }}
+            </p>
           </div>
         </div>
       </div>
+
+      <!-- inset modal update from websocket -->
+      <teleport to="body">
+        <div v-if="showModal" class="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
+          <div class="bg-white rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-4">Update Invoice</h2>
+            <p>Invoice {{ item?.invoice }} berhasil diperbarui</p>
+            <button @click="showModal = false" class="mt-4 px-4 py-2 rounded-lg bg-blue-600 text-white">Tutup</button>
+          </div>
+        </div>
+      </teleport>
     </section>
   </ClientOnly>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 import { useFetch } from "#app";
 import { useLogTrafic } from "~/composable/useLogTrafic";
 
 const route = useRoute();
 const invoice = ref<string>((route.query.invoice as string) || "");
+
+const showModal = ref(false)
 
 const { data, pending, error, refresh } = await useFetch("/api/transactions", {
   query: computed(() => ({ invoice: invoice.value })),
@@ -62,4 +79,46 @@ function onSearch() {
 }
 
 useLogTrafic()
+
+// SSE: auto-refresh when transaction is updated from CMS
+let es: EventSource | null = null
+
+function openStream() {
+  closeStream()
+  const inv = invoice.value?.trim()
+  if (!inv) return
+  try {
+    es = new EventSource(`/api/transactions/stream?invoice=${encodeURIComponent(inv)}`)
+    es.onmessage = () => {
+      // Refresh current invoice data on any update event
+      refresh()
+      showModal.value = true
+    }
+    es.onerror = () => {
+      // Reconnect after a short delay
+      closeStream()
+      setTimeout(() => openStream(), 2000)
+    }
+  } catch {
+    // ignore
+  }
+}
+
+function closeStream() {
+  try { es?.close() } catch {}
+  es = null
+}
+
+onMounted(() => {
+  if (invoice.value) openStream()
+})
+
+watch(invoice, () => {
+  // Re-open stream for new invoice
+  openStream()
+})
+
+onBeforeUnmount(() => {
+  closeStream()
+})
 </script>

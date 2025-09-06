@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { db } from '~~/server/utils/db'
 import { requireAdmin } from '../_auth'
+import { eventBus } from '~~/server/utils/events'
 
 const schema = z.object({
   is_approved: z.boolean().optional(),
@@ -30,5 +31,16 @@ export default defineEventHandler(async (event) => {
       pdf_url: data.pdf_url ?? undefined,
     },
   })
+  // Broadcast update event for live invoice updates
+  try {
+    eventBus.emit('transaction_update', {
+      id: item.id,
+      invoice: item.invoice,
+      is_approved: item.is_approved,
+      is_success: item.is_success,
+      reason: item.reason,
+      updated_at: new Date().toISOString(),
+    })
+  } catch {}
   return { item }
 })

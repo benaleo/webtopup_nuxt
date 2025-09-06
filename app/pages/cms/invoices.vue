@@ -45,7 +45,29 @@
         </thead>
         <tbody v-if="items.length">
           <tr v-for="t in items" :key="t.id" class="border-b last:border-0">
-            <td class="px-3 py-2 font-medium">{{ t.invoice }}</td>
+            <td class="px-3 py-2 font-medium">
+              {{ t.invoice }}
+              <button
+                class="flex items-center justify-center px-2 py-1 border rounded border-gray-300 text-gray-600 hover:text-gray-800 hover:bg-gray-200"
+                @click="copyToClipboard(t.invoice)"
+                v-tippy="{ content: 'Copy to clipboard' }"
+              >
+                <span class="sr-only">Copy to clipboard</span>
+                <svg
+                  aria-hidden="true"
+                  class="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    clip-rule="evenodd"
+                    d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 11-4 0V9l-3 3m0 0l-3-3m3 3V4"
+                    fill-rule="evenodd"
+                  ></path>
+                </svg>
+              </button>
+            </td>
             <td class="px-3 py-2 text-gray-600">{{ formatDate(t.created_at) }}</td>
             <td class="px-3 py-2">{{ t.email }}</td>
             <td class="px-3 py-2">{{ t.phone }}</td>
