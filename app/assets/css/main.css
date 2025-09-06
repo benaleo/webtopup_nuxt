@@ -13,5 +13,5 @@ input[type="file"] {
 
 /* Show the file name after it has been chosen */
 .custom-file-upload::after {
-  @apply content-['Attach file'] absolute top-0 right-0 mt-2 mr-2 text-xs details-content:attr(data-file-name);
+  @apply absolute top-0 right-0 mt-2 mr-2 text-xs ;
 }

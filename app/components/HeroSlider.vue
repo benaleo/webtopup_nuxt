@@ -8,12 +8,12 @@
         class="rounded-xl overflow-hidden"
       >
         <SwiperSlide v-for="item in items" :key="item.id">
-          <img :src="item.file_url" :alt="item.name" class="w-full h-56 md:h-80 object-cover" />
+          <img :src="item.file_url" :alt="item.name" class="w-full h-[60vh] object-cover" />
         </SwiperSlide>
       </Swiper>
     </div>
     <template #fallback>
-      <div class="w-full h-56 md:h-80 bg-gray-200 animate-pulse rounded-xl" />
+      <div class="w-full h-[60vh] bg-gray-200 animate-pulse rounded-xl" />
     </template>
   </ClientOnly>
 </template>

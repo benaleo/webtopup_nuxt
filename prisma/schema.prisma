@@ -62,6 +62,8 @@ model Transaction {
   invoice        String   @unique
   email          String
   phone          String
+  user_id        String?
+  server_id      String?
   voucher        String?
   voucher_value  Float?
   product_id     String
@@ -76,6 +78,7 @@ model Transaction {
   is_success     Boolean  @default(false)
   reason         String?
   pdf_url        String?
+  created_at     DateTime @default(now())
 }
 
 model Gallery {
@@ -88,6 +91,37 @@ model Gallery {
   created_at  DateTime @default(now())
   created_by  String?
   updated_at  DateTime @updatedAt
+  updated_by  String?
+}
+
+model PaymentMethod {
+  id             String   @id @default(uuid())
+  name           String
+  service_amount Float   @default(0)
+  image          String?
+  orders         Int
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+}
+
+enum VoucherType {
+  AMOUNT
+  PERCENTAGE
+}
+
+model Voucher {
+  id          String      @id @default(uuid())
+  name        String
+  amount      Float
+  type        VoucherType
+  valid_at    DateTime
+  valid_until DateTime
+  is_active   Boolean     @default(true)
+  deleted_at  DateTime?
+  created_at  DateTime    @default(now())
+  created_by  String?
+  updated_at  DateTime    @updatedAt
   updated_by  String?
 }
 
