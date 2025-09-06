@@ -21,6 +21,8 @@ export default defineEventHandler(async (event) => {
   }
   if (ors.length) where.OR = ors
 
-  const items = await prisma.product.findMany({ where, orderBy: { created_at: 'desc' } })
+  // If filtering by specific game via gameSlug (thus where.game_id is set), order by value ASC as requested
+  const orderBy: any = (where as any).game_id ? { value: 'desc' } : { created_at: 'desc' }
+  const items = await prisma.product.findMany({ where, orderBy })
   return { items }
 })
