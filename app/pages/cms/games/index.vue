@@ -151,11 +151,15 @@
 
           <div>
             <label class="block text-sm mb-1">Description</label>
-            <textarea
-              v-model="form.description"
-              class="w-full border rounded px-2 py-1"
-              rows="2"
-            />
+            <ClientOnly>
+              <QuillEditor
+                theme="snow"
+                contentType="html"
+                v-model:content="form.description"
+                toolbar="hide"
+                class="bg-white"
+              />
+            </ClientOnly>
           </div>
 
           <div class="space-y-2">
@@ -215,6 +219,8 @@
 </template>
 
 <script setup lang="ts">
+import { QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css'
 definePageMeta({ layout: "cms" });
 
 const pageSizeOptions = [10, 25, 50, 100];

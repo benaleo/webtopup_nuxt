@@ -21,6 +21,7 @@
     "@prisma/client": "^5.16.1",
     "@prisma/extension-accelerate": "^1.1.0",
     "@tailwindcss/vite": "^4.1.13",
+    "@tailwindcss/typography": "^0.5.15",
     "@types/bcryptjs": "^3.0.0",
     "bcryptjs": "^2.4.3",
     "jose": "^5.8.0",
@@ -29,6 +30,7 @@
     "tailwindcss": "^4.1.13",
     "vue": "^3.5.20",
     "vue-router": "^4.5.1",
+    "@vueup/vue-quill": "^1.2.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

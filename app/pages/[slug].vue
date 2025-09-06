@@ -251,7 +251,7 @@
         <!-- Description of Game -->
         <div v-if="game.description" class="mt-6">
           <h2 class="text-lg font-semibold mb-2">Deskripsi Game</h2>
-          <div v-html="game.description"></div>
+          <div class="prose max-w-none" v-html="game.description" data-markdown data-prose-decorations data-prose-typography="constrained"></div>
         </div>
       </div>
     </div>
@@ -475,5 +475,8 @@ function currency(n: number) {
 /* Rotate chevron when its parent <details> is open */
 details[open] .chevron {
   transform: rotate(180deg);
+}
+ol {
+  list-style-type: decimal;
 }
 </style>
