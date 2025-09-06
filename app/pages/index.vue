@@ -12,6 +12,7 @@
           :key="g.id"
           :image="`${baseUrl}${g.image}`"
           :name="g.name"
+          :slug="g.slug"
           :publisher="g.publisher"
         />
       </div>
@@ -26,6 +27,7 @@
           :key="g.id"
           :image="`${baseUrl}${g.image}`"
           :name="g.name"
+          :slug="g.slug"
           :publisher="g.publisher"
         />
       </div>

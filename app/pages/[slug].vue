@@ -1,12 +1,12 @@
 <template>
   <section class="container mx-auto px-4 py-6" v-if="game">
-    <div class="flex flex-col lg:flex-row gap-6">
-      <div class="lg:w-1/3">
-        <img :src="resolve(game.image)" :alt="game.name" class="w-full h-56 object-cover rounded" />
+    <div class="flex flex-col gap-6">
+      <div class="w-full">
+        <img :src="resolve(game.image)" :alt="game.name" class="w-full md:max-w-[400px] h-56 object-cover rounded" />
         <h1 class="mt-3 text-2xl font-semibold">{{ game.name }}</h1>
         <p class="text-sm text-gray-600">{{ game.publisher }}</p>
       </div>
-      <div class="lg:flex-1">
+      <div class="w-full">
         <!-- Steps -->
         <div class="space-y-6">
           <!-- Step 1: Nominal -->
