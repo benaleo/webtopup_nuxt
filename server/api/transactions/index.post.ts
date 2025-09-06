@@ -104,7 +104,7 @@ export default defineEventHandler(async (event) => {
         phone: data.phone,
 
         // Game
-        game_id: product.game_id,
+        game_id: data.game_id,
 
         // Product
         product_id: product.id,
