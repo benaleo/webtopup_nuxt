@@ -486,9 +486,12 @@ async function submit() {
         server_id: server_id.value,
       },
     });
-    if (res?.invoice) {
-      navigateTo({ path: "/invoices", query: { invoice: res.invoice } });
+
+    if (res?.success) {
+      toast.success("Transaksi berhasil dibuat");
+      navigateTo({ path: "/invoices", query: { invoice: res.item.invoice } });
     }
+
   } catch (e: any) {
     alert(e?.data?.message || e.message || "Gagal membuat transaksi");
   } finally {

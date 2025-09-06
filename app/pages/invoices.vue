@@ -1,4 +1,5 @@
 <template>
+<ClientOnly>
   <section class="container mx-auto px-4 py-6">
     <h1 class="text-xl font-semibold mb-4">Cek Transaksi</h1>
     <form @submit.prevent="onSearch" class="flex gap-2">
@@ -22,6 +23,7 @@
       </div>
     </div>
   </section>
+</ClientOnly>
 </template>
 
 <script setup lang="ts">

@@ -67,6 +67,8 @@ export default defineEventHandler(async (event) => {
 
     if (data.voucher_code) {
       const now = new Date()
+      // +7 hours
+      now.setHours(now.getHours() + 7)
       const voucher = await tx.voucher.findFirst({
         where: {
           code: data.voucher_code,
@@ -122,5 +124,5 @@ export default defineEventHandler(async (event) => {
     return trx
   })
 
-  return { item: result }
+  return { success: true, item: result }
 })
