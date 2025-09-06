@@ -113,6 +113,8 @@
 </template>
 
 <script setup lang="ts">
+import { toast } from 'vue-sonner'
+
 definePageMeta({ layout: 'cms' })
 
 const pageSizeOptions = [10, 25, 50, 100]
@@ -197,13 +199,15 @@ async function submitForm() {
     }
     if (editing.value && currentId.value) {
       await $fetch(`/api/cms/vouchers/${currentId.value}`, { method: 'PUT', body: payload })
+      toast.success(`Voucher "${form.name}" berhasil diperbarui`)
     } else {
       await $fetch(`/api/cms/vouchers`, { method: 'POST', body: payload })
+      toast.success(`Voucher "${form.name}" berhasil ditambahkan`)
     }
     showForm.value = false
     fetchList()
   } catch (e: any) {
-    alert(e?.data?.message || e.message || 'Error')
+    toast.error(e?.data?.message || e.message || 'Error')
   }
 }
 
@@ -212,8 +216,9 @@ async function onDelete(v: any) {
   try {
     await $fetch(`/api/cms/vouchers/${v.id}`, { method: 'DELETE' })
     fetchList()
+    toast.success(`Voucher \"${v.name}\" berhasil dihapus`)
   } catch (e: any) {
-    alert(e?.data?.message || e.message || 'Error')
+    toast.error(e?.data?.message || e.message || 'Error')
   }
 }
 

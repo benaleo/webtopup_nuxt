@@ -16,8 +16,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id') as string
   const body = await readBody(event)
   const data = schema.parse(body)
-  const prisma = db()
-  const item = await prisma.voucher.update({
+  const item = await db.voucher.update({
     where: { id },
     data: { ...data, valid_at: data.valid_at ? new Date(data.valid_at) : undefined, valid_until: data.valid_until ? new Date(data.valid_until) : undefined },
   })

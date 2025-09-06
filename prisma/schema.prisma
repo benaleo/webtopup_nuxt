@@ -141,6 +141,7 @@ enum VoucherType {
 model Voucher {
   id          String      @id @default(uuid())
   name        String
+  code        String
   amount      Float
   type        VoucherType
   valid_at    DateTime

@@ -15,8 +15,7 @@ export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const body = await readBody(event)
   const data = schema.parse(body)
-  const prisma = db()
-  const item = await prisma.voucher.create({
+  const item = await db.voucher.create({
     data: { ...data, valid_at: new Date(data.valid_at), valid_until: new Date(data.valid_until), is_active: data.is_active ?? true },
   })
   return { item }
