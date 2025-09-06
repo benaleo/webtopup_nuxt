@@ -32,6 +32,7 @@ model Game {
   publisher   String
   image   String
   description String?
+  metadata    Json?
   is_active   Boolean  @default(true)
   deleted_at  DateTime?
   created_at  DateTime @default(now())
@@ -55,6 +56,7 @@ model Product {
   created_by  String?
   updated_at  DateTime @updatedAt
   updated_by  String?
+  metadata    Json?
 
   transactions Transaction[]
 }

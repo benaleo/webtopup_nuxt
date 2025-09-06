@@ -90,6 +90,22 @@
               <input type="checkbox" v-model="form.is_active" /> Active
             </label>
           </div>
+
+          <!-- Metadata Editor -->
+          <div class="pt-2">
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-medium">Metadata (opsional)</label>
+              <button type="button" @click="addMetaPair" class="px-2 py-1 text-xs rounded border">+ Tambah Attribute</button>
+            </div>
+            <div class="space-y-2">
+              <div v-for="(pair, idx) in metadataPairs" :key="idx" class="flex items-center gap-2">
+                <input v-model="pair.key" placeholder="key" class="flex-1 border rounded px-2 py-1 text-sm" />
+                <input v-model="pair.value" placeholder="value" class="flex-1 border rounded px-2 py-1 text-sm" />
+                <button type="button" @click="removeMetaPair(idx)" class="px-2 py-1 text-xs border rounded">Hapus</button>
+              </div>
+              <div v-if="!metadataPairs.length" class="text-xs text-gray-500">Belum ada metadata. Klik "Tambah Attribute" untuk menambah.</div>
+            </div>
+          </div>
         </div>
         <div class="px-4 py-3 border-t flex justify-end gap-2">
           <button @click="closeForm" class="px-3 py-2 border rounded">Cancel</button>
@@ -153,10 +169,31 @@ const editing = ref(false)
 const currentId = ref<string | null>(null)
 const form = reactive({ name: '', value: '', price: 0, is_instant: false, is_active: true })
 
+// Metadata editor state
+type MetaPair = { key: string; value: string }
+const metadataPairs = ref<MetaPair[]>([])
+
+function addMetaPair() {
+  metadataPairs.value.push({ key: '', value: '' })
+}
+function removeMetaPair(idx: number) {
+  metadataPairs.value.splice(idx, 1)
+}
+function buildMetadataObject(): Record<string, any> | undefined {
+  const obj: Record<string, any> = {}
+  for (const { key, value } of metadataPairs.value) {
+    const k = String(key || '').trim()
+    if (!k) continue
+    obj[k] = value
+  }
+  return Object.keys(obj).length ? obj : undefined
+}
+
 function openCreate() {
   editing.value = false
   currentId.value = null
   Object.assign(form, { name: '', value: '', price: 0, is_instant: false, is_active: true })
+  metadataPairs.value = []
   showForm.value = true
 }
 
@@ -164,6 +201,13 @@ function openEdit(p: any) {
   editing.value = true
   currentId.value = p.id
   Object.assign(form, { name: p.name, value: p.value, price: p.price, is_instant: p.is_instant, is_active: p.is_active })
+  // Initialize metadata pairs from existing metadata object if present
+  const metaObj = (p as any).metadata as Record<string, any> | null | undefined
+  if (metaObj && typeof metaObj === 'object') {
+    metadataPairs.value = Object.entries(metaObj).map(([k, v]) => ({ key: String(k), value: String(v as any) }))
+  } else {
+    metadataPairs.value = []
+  }
   showForm.value = true
 }
 
@@ -171,10 +215,11 @@ function closeForm() { showForm.value = false }
 
 async function submitForm() {
   try {
+    const metadata = buildMetadataObject()
     if (editing.value && currentId.value) {
-      await $fetch(`/api/cms/products/${currentId.value}`, { method: 'PUT', body: { ...form } })
+      await $fetch(`/api/cms/products/${currentId.value}`, { method: 'PUT', body: { ...form, metadata } })
     } else {
-      await $fetch(`/api/cms/products`, { method: 'POST', body: { ...form, game_id: gameId.value } })
+      await $fetch(`/api/cms/products`, { method: 'POST', body: { ...form, game_id: gameId.value, metadata } })
     }
     showForm.value = false
     fetchList()
