@@ -96,8 +96,8 @@
                 <details
                   v-if="pmsByCategory?.[cat.value]?.length > 0"
                   class="border rounded"
-                  :open="false"
-                  @toggle="open = !open"
+                  :open="!!openCategories[cat.value]"
+                  @toggle="openCategories[cat.value] = !openCategories[cat.value]"
                 >
                   <summary
                     class="cursor-pointer px-3 py-2 flex flex-col gap-2 bg-gray-50"
@@ -120,8 +120,8 @@
                         />
                       </svg>
                     </div>
-                    <!-- flex all list image in category and hide while open category -->
-                    <div v-if="!open" class="flex justify-end gap-2">
+                    <!-- Show payment method icons when category is closed -->
+                    <div v-if="!openCategories[cat.value]" class="flex justify-end gap-2">
                       <img
                         v-for="pm in pmsByCategory[cat.value] || []"
                         :key="pm.id"
@@ -327,7 +327,7 @@ function cardTotal(pm: any) {
 const paymentMethods = ref<any[]>([]);
 const pmLoading = ref(true);
 const payment_id = ref<string | null>(null);
-const open = ref(false); // Track if category is open
+const openCategories = ref<Record<string, boolean>>({}); // Track open/closed state for each category
 const selectedPayment = computed(
   () => paymentMethods.value.find((p) => p.id === payment_id.value) || null
 );
