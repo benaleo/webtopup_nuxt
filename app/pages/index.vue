@@ -76,4 +76,6 @@ function goCheck() {
   if (!invoice.value) return;
   navigateTo({ path: "/invoices", query: { invoice: invoice.value } });
 }
+
+definePageMeta({ layout: "default" });
 </script>

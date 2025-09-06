@@ -94,11 +94,21 @@ model Gallery {
   updated_by  String?
 }
 
+enum PaymentMethodCategory {
+  QRIS
+  E-WALLET
+  VIRTUAL_ACCOUNT
+  STORE
+}
+
 model PaymentMethod {
   id             String   @id @default(uuid())
   name           String
   service_amount Float   @default(0)
+  service_percentage Float   @default(0)
   image          String?
+  description    String?
+  category       PaymentMethodCategory
   orders         Int
   is_active      Boolean  @default(true)
   created_at     DateTime @default(now())

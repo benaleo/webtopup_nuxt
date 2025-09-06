@@ -50,6 +50,26 @@
             </li>
             <li>
               <NuxtLink
+                to="/cms/payment-methods"
+                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
+                active-class="bg-gray-100 font-medium"
+              >
+                <span>💰</span>
+                <span>Payment Methods</span>
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                to="/cms/vouchers"
+                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
+                active-class="bg-gray-100 font-medium"
+              >
+                <span>🎁</span>
+                <span>Voucher</span>
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
                 to="/cms/invoices"
                 class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
                 active-class="bg-gray-100 font-medium"
@@ -93,6 +113,7 @@
             >Menu</NuxtLink
           >
         </div>
+        <NavbarCms />
         <slot />
       </main>
     </div>
@@ -100,6 +121,8 @@
 </template>
 
 <script setup lang="ts">
+import NavbarCms from '~/components/NavbarCms.vue';
+
 async function logout() {
   await $fetch("/api/auth/logout", { method: "POST" });
   await navigateTo("/cms/login");
