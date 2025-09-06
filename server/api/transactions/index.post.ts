@@ -6,6 +6,9 @@ const schema = z.object({
   email: z.string().email(),
   phone: z.string().min(6),
 
+  // Game
+  game_id: z.string(),
+
   // Product
   product_id: z.string().uuid(),
   product_name: z.string(),
@@ -99,6 +102,9 @@ export default defineEventHandler(async (event) => {
         invoice,
         email: data.email,
         phone: data.phone,
+
+        // Game
+        game_id: product.game_id,
 
         // Product
         product_id: product.id,
