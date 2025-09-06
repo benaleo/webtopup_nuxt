@@ -55,6 +55,8 @@ model Product {
   created_by  String?
   updated_at  DateTime @updatedAt
   updated_by  String?
+
+  transactions Transaction[]
 }
 
 model Transaction {
@@ -62,22 +64,35 @@ model Transaction {
   invoice        String   @unique
   email          String
   phone          String
-  voucher        String?
-  voucher_value  Float?
+  
+  // Relations
+  voucher_id     String?
+  voucher        Voucher? @relation(fields: [voucher_id], references: [id], onDelete: Cascade)
+  
+  // Product relation
   product_id     String
+  product        Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  
+  // Payment relation
+  payment_id     String
+  payment        PaymentMethod @relation(fields: [payment_id], references: [id], onDelete: Cascade)
+  payment_name   String?
+  
+  // Transaction details
   product_name   String
   product_price  Float
   qty            Int
-  payment_id     PaymentMethod
-  payment        PaymentMethod @relation(fields: [payment_id], references: [id], onDelete: Cascade)
-  payment_name   String?
   service_amount Float?
+  service_percentage_amount Float?
   total_payment  Float
   is_approved    Boolean  @default(false)
   is_success     Boolean  @default(false)
   reason         String?
   pdf_url        String?
   created_at     DateTime @default(now())
+  
+  // Voucher value
+  voucher_value  Float?
 }
 
 model Gallery {
@@ -134,6 +149,8 @@ model Voucher {
   created_by  String?
   updated_at  DateTime    @updatedAt
   updated_by  String?
+
+  transactions Transaction[]
 }
 
 model LogTrafic {

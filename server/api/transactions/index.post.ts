@@ -2,11 +2,30 @@ import { z } from 'zod'
 import { db } from '~~/server/utils/db'
 
 const schema = z.object({
+  // User info
   email: z.string().email(),
   phone: z.string().min(6),
+
+  // Product
   product_id: z.string().uuid(),
+  product_name: z.string(),
+  product_price: z.number().nonnegative(),
   qty: z.number().int().min(1),
-  voucher: z.string().optional(),
+
+  // Payment
+  payment_id: z.string().uuid(),
+  payment_name: z.string().optional(),
+  service_amount: z.number().nonnegative().default(0),
+  service_percentage_amount: z.number().nonnegative().default(0),
+  total_payment: z.number().nonnegative(),
+
+  // Voucher (optional)
+  voucher_code: z.string().optional(),
+  voucher_value: z.number().nonnegative().optional(),
+
+  // Extra (optional, currently unused on server but allowed)
+  user_id: z.string().optional(),
+  server_id: z.string().optional(),
 })
 
 function genInvoice() {
@@ -17,28 +36,54 @@ function genInvoice() {
 }
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  const { email, phone, product_id, qty, voucher } = schema.parse(body)
+  const raw = await readBody(event)
+  const data = schema.parse(raw)
 
   const prisma = db()
-  const product = await prisma.product.findUnique({ where: { id: product_id } })
+
+  // Validate product and payment exist and are active
+  const [product, payment] = await Promise.all([
+    prisma.product.findUnique({ where: { id: data.product_id } }),
+    prisma.paymentMethod.findUnique({ where: { id: data.payment_id } }),
+  ])
+
   if (!product || !product.is_active) {
     throw createError({ statusCode: 400, message: 'Invalid product' })
   }
+  if (!payment || !payment.is_active) {
+    throw createError({ statusCode: 400, message: 'Invalid payment method' })
+  }
+
+  // Recompute totals on the server for safety
+  const baseAmount = product.price * data.qty
+  const serviceAmount = payment.service_amount || 0
+  const servicePctAmount = baseAmount * ((payment.service_percentage || 0) / 100)
+  const voucherValue = data.voucher_value || 0
+  const computedTotal = Math.max(0, baseAmount + serviceAmount + servicePctAmount - voucherValue)
 
   const invoice = genInvoice()
-  const total = product.price * qty
   const trx = await prisma.transaction.create({
     data: {
       invoice,
-      email,
-      phone,
-      voucher: voucher || null,
+      email: data.email,
+      phone: data.phone,
+
+      // Product
       product_id: product.id,
       product_name: product.name,
       product_price: product.price,
-      qty,
-      total_payment: total,
+      qty: data.qty,
+
+      // Payment
+      payment_id: payment.id,
+      payment_name: payment.name,
+      service_amount: serviceAmount,
+      service_percentage_amount: servicePctAmount,
+      total_payment: computedTotal,
+
+      // Voucher: we only store the value; linking by code is not supported in schema
+      voucher_value: voucherValue,
+      // voucher_id can be set here if you later resolve voucher_code -> voucher.id
     },
   })
 

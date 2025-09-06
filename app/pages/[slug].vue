@@ -153,12 +153,6 @@
                         />
                         <div class="min-w-0">
                           <div class="font-medium">{{ pm.name }}</div>
-                          <div
-                            class="text-xs text-gray-500"
-                            v-if="pm.description"
-                          >
-                            {{ pm.description }}
-                          </div>
                           <div class="mt-1 font-semibold">
                             {{ currency(cardTotal(pm)) }}
                           </div>
@@ -227,7 +221,14 @@
                 </div>
                 <div class="text-sm">
                   Biaya layanan:
-                  {{ currency(selectedPayment?.service_amount || 0) }}
+                  {{
+                    currency(
+                      (selectedPayment?.service_amount || 0) +
+                        (Math.ceil(
+                          ((selectedPayment?.service_percentage || 0) / 100) * ((selectedProduct?.price || 0) * (qty || 1))
+                        ))
+                    )
+                  }}
                 </div>
                 <div class="text-sm" v-if="voucher_value">
                   Voucher: -{{ currency(voucher_value) }}
@@ -412,18 +413,37 @@ async function submit() {
 
   submitting.value = true;
   try {
+    const baseAmount = selectedProduct.value.price * qty.value;
+    const serviceAmount = selectedPayment.value?.service_amount || 0;
+    const servicePercentage = selectedPayment.value?.service_percentage || 0;
+    const servicePercentageAmount = (baseAmount * servicePercentage) / 100;
+    const totalPayment = baseAmount + serviceAmount + servicePercentageAmount - (voucher_value.value || 0);
+
     const res: any = await $fetch("/api/transactions", {
       method: "POST",
       body: {
-        slug,
-        productId: selectedProduct.value.id,
+        // Product info
+        product_id: selectedProduct.value.id,
+        product_name: selectedProduct.value.name,
+        product_price: selectedProduct.value.price,
         qty: qty.value,
-        user_id: user_id.value,
-        server_id: server_id.value,
+        
+        // Payment info
+        payment_id: payment_id.value,
+        payment_name: selectedPayment.value?.name,
+        service_amount: serviceAmount,
+        service_percentage_amount: Math.ceil(servicePercentageAmount),
+        total_payment: Math.ceil(totalPayment),
+        
+        // Voucher info
+        voucher_code: voucherApplied.value ? voucherCode.value : undefined,
+        voucher_value: voucher_value.value || 0,
+        
+        // User info
         email: email.value,
         phone: phone.value,
-        paymentId: payment_id.value,
-        voucherCode: voucherApplied.value ? voucherCode.value : undefined,
+        user_id: user_id.value,
+        server_id: server_id.value,
       },
     });
     if (res?.invoice) {
