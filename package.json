@@ -16,6 +16,7 @@
     "db:studio": "bunx prisma studio",
     "db:clear:transactions": "bun prisma/clear-transactions.ts",
     "db:clear:vouchers": "bun prisma/clear-vouchers.ts",
+    "db:clear:logtrafic-dev": "bun prisma/clear-logtrafic-dev.ts",
     "seed": "bun prisma/seed.ts"
   },
   "dependencies": {
