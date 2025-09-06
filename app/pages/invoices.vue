@@ -25,7 +25,7 @@
             <p><span class="font-medium">Email:</span> {{ item.email }}</p>
             <p><span class="font-medium">Phone:</span> {{ item.phone }}</p>
             <p>
-              <span class="font-medium">Produk:</span> {{ item.product_name }}
+              <span class="font-medium">Produk:</span> {{ item.product_name }} x {{ item.qty }} qty orders
             </p>
             <p>
               <span class="font-medium">Total:</span> Rp
