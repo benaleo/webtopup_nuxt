@@ -68,8 +68,6 @@ export default defineEventHandler(async (event) => {
 
     if (data.voucher_code) {
       const now = new Date()
-      // +7 hours
-      now.setHours(now.getHours() + 7)
       const voucher = await tx.voucher.findFirst({
         where: {
           code: data.voucher_code,
@@ -96,9 +94,6 @@ export default defineEventHandler(async (event) => {
       await tx.voucher.update({ where: { id: voucher.id }, data: { stock: { decrement: 1 } } })
     }
 
-    const now = new Date()
-    now.setHours(now.getHours() + 7)
-
     const trx = await tx.transaction.create({
       data: {
         invoice,
@@ -121,9 +116,6 @@ export default defineEventHandler(async (event) => {
         // Voucher info
         voucher_id: voucherId,
         voucher_value: appliedVoucherValue || 0,
-
-        // other
-        created_at: now,
       },
     })
 
