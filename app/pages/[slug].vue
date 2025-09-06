@@ -1,5 +1,5 @@
 <template>
-  <section class="container mx-auto px-4 py-6" v-if="game">
+  <section class="container mx-auto px-4 py-6 pb-28" v-if="game">
     <div class="flex flex-col gap-6">
       <div class="w-full">
         <img
@@ -213,7 +213,7 @@
           </div>
 
           <!-- Summary & Submit -->
-          <div class="p-4 border rounded bg-white">
+          <div class="p-4 bg-white border-t sticky bottom-0 z-20 shadow-sm">
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-sm">
@@ -246,6 +246,12 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- Description of Game -->
+        <div v-if="game.description" class="mt-6">
+          <h2 class="text-lg font-semibold mb-2">Deskripsi Game</h2>
+          <div v-html="game.description"></div>
         </div>
       </div>
     </div>
