@@ -18,84 +18,14 @@
         </div>
         <nav class="flex-1 p-2">
           <ul class="space-y-1 text-sm">
-            <li>
+            <li v-for="menu in ListMenu" :key="menu.name">
               <NuxtLink
-                to="/cms/dashboard"
+                :to="menu.link"
                 class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
                 active-class="bg-gray-100 font-medium"
               >
-                <span>🏠</span>
-                <span>Dashboard</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/profile"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>👤</span>
-                <span>Profile</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/gallery"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>📸</span>
-                <span>Gallery</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/games"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>🎮</span>
-                <span>Game</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/payment-methods"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>💰</span>
-                <span>Payment Methods</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/vouchers"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>🎁</span>
-                <span>Voucher</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/invoices"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>🧾</span>
-                <span>Invoices</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/log-traffic"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>📈</span>
-                <span>Log Traffic</span>
+                <span><i :class="`fa-solid fa-${menu.icon}`"></i></span>
+                <span>{{ menu.name }}</span>
               </NuxtLink>
             </li>
           </ul>
@@ -134,6 +64,63 @@
 
 <script setup lang="ts">
 import NavbarCms from '~/components/NavbarCms.vue';
+
+const ListMenu = [
+  {
+    name: 'Dashboard',
+    icon: 'house',
+    link: '/cms/dashboard',
+    role: ['ADMIN', 'USER']
+  },
+  {
+    name: 'Profile',
+    icon: 'user',
+    link: '/cms/profile',
+    role: ['ADMIN', 'USER']
+  },
+  {
+    name: 'Users',
+    icon: 'users',
+    link: '/cms/users',
+    role: ['ADMIN']
+  },
+  {
+    name: 'Gallery',
+    icon: 'image',
+    link: '/cms/gallery',
+    role: ['ADMIN']
+  },
+  {
+    name: 'Games',
+    icon: 'gamepad',
+    link: '/cms/games',
+    role: ['ADMIN']
+  },
+  {
+    name: 'Payment Methods',
+    icon: 'credit-card',
+    link: '/cms/payment-methods',
+    role: ['ADMIN']
+  },
+  {
+    name: 'Vouchers',
+    icon: 'gift',
+    link: '/cms/vouchers',
+    role: ['ADMIN']
+  },
+  {
+    name: 'Invoices',
+    icon: 'receipt',
+    link: '/cms/invoices',
+    role: ['ADMIN']
+  },
+  {
+    name: 'Log Traffic',
+    icon: 'chart-line',
+    link: '/cms/log-traffic',
+    role: ['ADMIN']
+  }
+]
 
 async function logout() {
   await $fetch("/api/auth/logout", { method: "POST" });
