@@ -39,13 +39,7 @@
 import { ref, computed, onMounted } from 'vue'
 import DashboardAdmin from '~/components/DashboardAdmin.vue'
 import DashboardUser from '~/components/DashboardUser.vue'
-
-interface User {
-  id: string
-  username: string
-  role: string
-  // Add other user properties as needed
-}
+import { type User } from '~~/types/app.types';
 
 // Using definePageMeta with proper type annotation
 definePageMeta({

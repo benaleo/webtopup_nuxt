@@ -20,16 +20,20 @@
     "seed": "bun prisma/seed.ts"
   },
   "dependencies": {
+    "@pinia/nuxt": "0.11.2",
     "@prisma/client": "^5.16.1",
     "@prisma/extension-accelerate": "^1.1.0",
     "@tailwindcss/typography": "^0.5.15",
     "@tailwindcss/vite": "^4.1.13",
     "@types/bcryptjs": "^3.0.0",
     "@vueup/vue-quill": "^1.2.0",
+    "@vueuse/core": "^13.9.0",
+    "@vueuse/nuxt": "^13.9.0",
     "bcryptjs": "^2.4.3",
     "jose": "^5.8.0",
     "lucide-vue-next": "^0.542.0",
     "nuxt": "^4.1.0",
+    "pinia": "^3.0.3",
     "sonner": "^2.0.7",
     "swiper": "^11.1.10",
     "tailwindcss": "^4.1.13",
@@ -41,7 +45,9 @@
   "devDependencies": {
     "@types/node": "^20.14.12",
     "prisma": "^5.16.1",
-    "tsx": "^4.19.2"
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.2",
+    "vue-tsc": "^3.0.6"
   },
   "prisma": {
     "seed": "bunx tsx prisma/seed.ts"

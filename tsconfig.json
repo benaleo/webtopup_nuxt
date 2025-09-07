@@ -1,11 +1,15 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
   "compilerOptions": {
-    "types": ["nuxt", "node"],
+    "types": ["nuxt", "node", "@types/node"],
     "baseUrl": ".",
     "moduleResolution": "bundler",
     "module": "ESNext",
     "target": "ESNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "paths": {
       "#app": [".nuxt/types/app"],
       "#imports": [".nuxt/imports"],
@@ -13,7 +17,11 @@
       "@/*": ["./*"],
       "~~/*": ["./*"],
       "@@/*": ["./*"]
-    }
+    },
+    "typeRoots": [
+      "./node_modules/@types",
+      "./types"
+    ]
   },
   "files": [],
   "references": [
