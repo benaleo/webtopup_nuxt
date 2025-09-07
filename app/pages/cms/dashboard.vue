@@ -5,103 +5,97 @@
       <button @click="logout" class="px-3 py-2 rounded bg-gray-800 text-white text-sm">Logout</button>
     </div>
 
-    <!-- Top Games -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-white border rounded p-4">
-        <h2 class="font-semibold mb-2">Top Games · Hari Ini</h2>
-        <ul class="space-y-2">
-          <li v-for="(g, i) in topGames.today" :key="g.game_id" class="flex items-center justify-between text-sm">
-            <span class="truncate">{{ i+1 }}. {{ g.game_name }}</span>
-            <span class="font-medium">{{ currency(g.total_payment) }} ({{ g.count }})</span>
-          </li>
-          <li v-if="!loadingTop && topGames.today.length === 0" class="text-gray-500 text-sm">Tidak ada data</li>
-          <li v-if="loadingTop" class="text-gray-500 text-sm">Memuat...</li>
-        </ul>
-      </div>
-      <div class="bg-white border rounded p-4">
-        <h2 class="font-semibold mb-2">Top Games · Bulan Ini</h2>
-        <ul class="space-y-2">
-          <li v-for="(g, i) in topGames.month" :key="g.game_id" class="flex items-center justify-between text-sm">
-            <span class="truncate">{{ i+1 }}. {{ g.game_name }}</span>
-            <span class="font-medium">{{ currency(g.total_payment) }} ({{ g.count }})</span>
-          </li>
-          <li v-if="!loadingTop && topGames.month.length === 0" class="text-gray-500 text-sm">Tidak ada data</li>
-          <li v-if="loadingTop" class="text-gray-500 text-sm">Memuat...</li>
-        </ul>
-      </div>
-      <div class="bg-white border rounded p-4">
-        <h2 class="font-semibold mb-2">Top Games · Tahun Ini</h2>
-        <ul class="space-y-2">
-          <li v-for="(g, i) in topGames.year" :key="g.game_id" class="flex items-center justify-between text-sm">
-            <span class="truncate">{{ i+1 }}. {{ g.game_name }}</span>
-            <span class="font-medium">{{ currency(g.total_payment) }} ({{ g.count }})</span>
-          </li>
-          <li v-if="!loadingTop && topGames.year.length === 0" class="text-gray-500 text-sm">Tidak ada data</li>
-          <li v-if="loadingTop" class="text-gray-500 text-sm">Memuat...</li>
-        </ul>
-      </div>
+    <div v-if="loading" class="text-center py-8">
+      <p>Loading user data...</p>
     </div>
-
-    <!-- Popular Links from Log Traffic -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="bg-white border rounded p-4">
-        <h2 class="font-semibold mb-2">Popular Links · Harian</h2>
-        <ul class="space-y-2">
-          <li v-for="(l, i) in popular.daily" :key="l.url + i" class="flex items-center justify-between text-sm">
-            <a class="truncate text-blue-700 hover:underline" :href="l.url" target="_blank" rel="noopener">{{ i+1 }}. {{ l.url.replace(baseUrl, '') }}</a>
-            <span class="font-medium">{{ l.count }}</span>
-          </li>
-          <li v-if="!loadingLinks && popular.daily.length === 0" class="text-gray-500 text-sm">Tidak ada data</li>
-          <li v-if="loadingLinks" class="text-gray-500 text-sm">Memuat...</li>
-        </ul>
+    
+    <template v-else>
+      <!-- Show Admin Dashboard -->
+      <DashboardAdmin v-if="hasAdminAccess" />
+      
+      <!-- Show User Dashboard -->
+      <DashboardUser v-else-if="hasUserAccess" />
+      
+      <!-- No Access Message -->
+      <div v-else class="bg-red-50 border-l-4 border-red-500 p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-red-700">
+              You don't have permission to access this dashboard.
+            </p>
+          </div>
+        </div>
       </div>
-      <div class="bg-white border rounded p-4">
-        <h2 class="font-semibold mb-2">Popular Links · Bulanan</h2>
-        <ul class="space-y-2">
-          <li v-for="(l, i) in popular.monthly" :key="l.url + i" class="flex items-center justify-between text-sm">
-            <a class="truncate text-blue-700 hover:underline" :href="l.url" target="_blank" rel="noopener">{{ i+1 }}. {{ l.url.replace(baseUrl, '') }}</a>
-            <span class="font-medium">{{ l.count }}</span>
-          </li>
-          <li v-if="!loadingLinks && popular.monthly.length === 0" class="text-gray-500 text-sm">Tidak ada data</li>
-          <li v-if="loadingLinks" class="text-gray-500 text-sm">Memuat...</li>
-        </ul>
-      </div>
-    </div>
+    </template>
   </section>
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'cms' })
-import { onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import DashboardAdmin from '~/components/DashboardAdmin.vue'
+import DashboardUser from '~/components/DashboardUser.vue'
+
+interface User {
+  id: string
+  username: string
+  role: string
+  // Add other user properties as needed
+}
+
+// Using definePageMeta with proper type annotation
+definePageMeta({
+  layout: 'cms',
+  // Middleware is handled in the auth plugin
+})
 
 const config = useRuntimeConfig()
 const baseUrl = config.public.BASE_URL
+const loading = ref(true)
+const user = ref<User | null>(null)
 
-const loadingTop = ref(true)
-const loadingLinks = ref(true)
-const topGames = reactive<{ today: any[]; month: any[]; year: any[] }>({ today: [], month: [], year: [] })
-const popular = reactive<{ daily: any[]; monthly: any[] }>({ daily: [], monthly: [] })
+// Check if user has admin access
+const hasAdminAccess = computed(() => {
+  const role = user.value?.role
+  return role === 'ADMIN' || role === 'SUPERADMIN'
+})
 
+// Check if user has basic user access
+const hasUserAccess = computed(() => {
+  return user.value?.role ? ['ADMIN', 'USER'].includes(user.value.role) : false
+})
+
+// Fetch user data
 onMounted(async () => {
   try {
-    const [top, links] = await Promise.all([
-      $fetch('/api/cms/dashboard/top-games'),
-      $fetch('/api/cms/dashboard/popular-links'),
-    ])
-    Object.assign(topGames, top as any)
-    Object.assign(popular, links as any)
+    const res = await $fetch<{ user: User | null }>('/api/auth/me')
+    user.value = res?.user || null
+  } catch (error) {
+    console.error('Failed to fetch user data:', error)
+    navigateTo('/cms/login')
   } finally {
-    loadingTop.value = false
-    loadingLinks.value = false
+    loading.value = false
   }
 })
 
 async function logout() {
-  await $fetch('/api/auth/logout', { method: 'POST' })
-  await navigateTo('/cms/login')
+  try {
+    await $fetch('/api/auth/logout', { method: 'POST' })
+    await navigateTo('/cms/login')
+  } catch (error) {
+    console.error('Logout failed:', error)
+  }
 }
 
-function currency(n: number) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n || 0)
+function currency(n: number): string {
+  return new Intl.NumberFormat('id-ID', { 
+    style: 'currency', 
+    currency: 'IDR', 
+    maximumFractionDigits: 0 
+  }).format(n || 0)
 }
 </script>
