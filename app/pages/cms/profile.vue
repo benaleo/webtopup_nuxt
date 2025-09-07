@@ -54,18 +54,24 @@
 
         <!-- Change Password -->
         <form v-else-if="tab==='password'" class="space-y-4 max-w-md" @submit.prevent="changePassword">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Old Password</label>
-            <input v-model="pwd.old_password" type="password" class="mt-1 w-full border rounded px-3 py-2 text-sm" required />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">New Password</label>
-            <input v-model="pwd.new_password" type="password" class="mt-1 w-full border rounded px-3 py-2 text-sm" required />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-            <input v-model="pwd.confirm_password" type="password" class="mt-1 w-full border rounded px-3 py-2 text-sm" required />
-          </div>
+          <PasswordInput
+            v-model="pwd.old_password"
+            label="Old Password"
+            id="old_password"
+            required
+          />
+          <PasswordInput
+            v-model="pwd.new_password"
+            label="New Password"
+            id="new_password"
+            required
+          />
+          <PasswordInput
+            v-model="pwd.confirm_password"
+            label="Confirm New Password"
+            id="confirm_password"
+            required
+          />
           <div class="pt-2">
             <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded text-sm" :disabled="savingPwd">
               {{ savingPwd ? 'Updating...' : 'Update Password' }}
@@ -136,6 +142,7 @@
 
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
+import PasswordInput from '../../../components/form/PasswordInput.vue'
 
 definePageMeta({ layout: 'cms' })
 
@@ -365,6 +372,7 @@ async function saveProfile() {
 
 // Password
 const pwd = reactive({ old_password: '', new_password: '', confirm_password: '' })
+// Password toggle state is now managed within the PasswordInput component
 const savingPwd = ref(false)
 async function changePassword() {
   if (pwd.new_password !== pwd.confirm_password) {
