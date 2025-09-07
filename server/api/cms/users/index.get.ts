@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { db } from '~~/server/utils/db'
+import { Prisma } from '@prisma/client'
 
 const querySchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -11,11 +12,11 @@ export default defineEventHandler(async (event) => {
   const q = getQuery(event)
   const { page, pageSize, search } = querySchema.parse(q)
 
-  const where = search
+  const where: Prisma.UserWhereInput = search
     ? {
         OR: [
-          { username: { contains: search!, mode: 'insensitive' } },
-          { name: { contains: search!, mode: 'insensitive' } },
+          { username: { contains: search!, mode: Prisma.QueryMode.insensitive } },
+          { name: { contains: search!, mode: Prisma.QueryMode.insensitive } },
         ],
       }
     : {}
