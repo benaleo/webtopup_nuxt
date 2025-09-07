@@ -30,6 +30,16 @@
             </li>
             <li>
               <NuxtLink
+                to="/cms/profile"
+                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
+                active-class="bg-gray-100 font-medium"
+              >
+                <span>👤</span>
+                <span>Profile</span>
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
                 to="/cms/gallery"
                 class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
                 active-class="bg-gray-100 font-medium"

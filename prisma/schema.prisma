@@ -19,10 +19,21 @@ model User {
   name       String
   username   String   @unique
   password   String
+  avatar     String?
   role       Role     @default(USER)
   is_active  Boolean  @default(true)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  // open joki
+  is_open_joki Boolean @default(false)
+  metadata_joki Json?
+
+  // other
+  last_username_at DateTime?
+
+  // get from transaction on Joki
+  transactions Transaction[]
 }
 
 model Game {
@@ -98,6 +109,13 @@ model Transaction {
   
   // Voucher value
   voucher_value  Float?
+
+  // User for Joki
+  joki_id        String?
+  joki           User? @relation(fields: [joki_id], references: [id], onDelete: Cascade)
+
+  // metadata
+  metadata       Json?
 }
 
 model Gallery {
