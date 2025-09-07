@@ -96,6 +96,41 @@
         </form>
       </div>
     </div>
+    <!-- Cropper Modal -->
+    <div v-if="crop.open" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/50" @click="closeCropper"></div>
+      <div class="relative bg-white rounded-md shadow-lg w-[95%] max-w-lg p-4">
+        <h3 class="font-semibold mb-3">Crop Avatar (1:1)</h3>
+        <div class="flex flex-col items-center">
+          <div
+            class="relative bg-gray-100 border rounded overflow-hidden"
+            :style="{ width: boxSize + 'px', height: boxSize + 'px' }"
+            @mousedown="onDragStart"
+            @touchstart.prevent="onDragStart"
+          >
+            <img
+              v-if="crop.imgSrc"
+              :src="crop.imgSrc"
+              alt="to-crop"
+              draggable="false"
+              :style="imageStyle"
+              @dragstart.prevent
+            />
+            <div class="absolute inset-0 pointer-events-none ring-2 ring-white/70"></div>
+          </div>
+          <div class="w-full mt-4">
+            <label class="text-sm text-gray-700">Zoom</label>
+            <input type="range" min="1" max="3" step="0.01" v-model.number="crop.zoom" class="w-full" />
+          </div>
+          <div class="mt-4 flex justify-end gap-2 w-full">
+            <button class="px-3 py-1.5 border rounded hover:bg-gray-50" @click="closeCropper">Cancel</button>
+            <button class="px-3 py-1.5 bg-gray-900 text-white rounded" @click="confirmCrop" :disabled="uploading">
+              {{ uploading ? 'Uploading...' : 'Use this avatar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -146,22 +181,158 @@ const avatarPreview = computed(() => form.remove_avatar ? null : (form.avatar ? 
 const uploadError = ref('')
 const saving = ref(false)
 
+const uploading = ref(false)
+const boxSize = 320
+const crop = reactive({
+  open: false,
+  imgSrc: '' as string,
+  naturalW: 0,
+  naturalH: 0,
+  zoom: 1,
+  offsetX: 0,
+  offsetY: 0,
+})
+
+const baseScale = computed(() => {
+  if (!crop.naturalW || !crop.naturalH) return 1
+  const minSide = Math.min(crop.naturalW, crop.naturalH)
+  return boxSize / minSide
+})
+const totalScale = computed(() => baseScale.value * crop.zoom)
+const displayedW = computed(() => crop.naturalW * totalScale.value)
+const displayedH = computed(() => crop.naturalH * totalScale.value)
+const imageStyle = computed(() => {
+  const tx = (boxSize - displayedW.value) / 2 + crop.offsetX
+  const ty = (boxSize - displayedH.value) / 2 + crop.offsetY
+  return {
+    position: 'absolute',
+    left: '0px',
+    top: '0px',
+    width: displayedW.value + 'px',
+    height: displayedH.value + 'px',
+    transform: `translate(${tx}px, ${ty}px)`,
+    willChange: 'transform',
+    userSelect: 'none',
+    touchAction: 'none',
+  } as any
+})
+
 function triggerFile() { fileInput.value?.click() }
 
 async function onFileChange(e: Event) {
   uploadError.value = ''
   const input = e.target as HTMLInputElement
   if (!input.files || !input.files[0]) return
-  const fd = new FormData()
-  fd.append('file', input.files[0])
+  const file = input.files[0]
+  const src = URL.createObjectURL(file)
+  const img = new Image()
+  img.onload = () => {
+    crop.naturalW = img.naturalWidth
+    crop.naturalH = img.naturalHeight
+    crop.imgSrc = src
+    crop.zoom = 1
+    crop.offsetX = 0
+    crop.offsetY = 0
+    crop.open = true
+  }
+  img.onerror = () => {
+    URL.revokeObjectURL(src)
+    uploadError.value = 'Cannot load image'
+  }
+  img.src = src
+  if (input) input.value = ''
+}
+
+function closeCropper() {
+  if (crop.imgSrc) URL.revokeObjectURL(crop.imgSrc)
+  crop.open = false
+  crop.imgSrc = ''
+}
+
+// Drag handling
+let dragging = false
+let startX = 0, startY = 0
+let startOffsetX = 0, startOffsetY = 0
+function onDragStart(ev: MouseEvent | TouchEvent) {
+  dragging = true
+  const pointer: any = (ev as any).touches ? (ev as any).touches[0] : ev
+  if (!pointer) return
+  startX = pointer.clientX
+  startY = pointer.clientY
+  startOffsetX = crop.offsetX
+  startOffsetY = crop.offsetY
+  window.addEventListener('mousemove', onDragMove)
+  window.addEventListener('mouseup', onDragEnd)
+  window.addEventListener('touchmove', onDragMove as any, { passive: false } as any)
+  window.addEventListener('touchend', onDragEnd)
+}
+function onDragMove(ev: MouseEvent | TouchEvent) {
+  if (!dragging) return
+  const pointer: any = (ev as any).touches ? (ev as any).touches[0] : ev
+  if (!pointer) return
+  const dx = pointer.clientX - startX
+  const dy = pointer.clientY - startY
+  crop.offsetX = startOffsetX + dx
+  crop.offsetY = startOffsetY + dy
+  if ((ev as any).preventDefault) (ev as any).preventDefault()
+}
+function onDragEnd() {
+  dragging = false
+  window.removeEventListener('mousemove', onDragMove)
+  window.removeEventListener('mouseup', onDragEnd)
+  window.removeEventListener('touchmove', onDragMove as any)
+  window.removeEventListener('touchend', onDragEnd)
+}
+
+async function confirmCrop() {
+  if (!crop.imgSrc) return
+  uploading.value = true
   try {
+    const img = new Image()
+    img.src = crop.imgSrc
+    await new Promise((res, rej) => { img.onload = () => res(true); img.onerror = rej })
+
+    const canvas = document.createElement('canvas')
+    const size = boxSize
+    canvas.width = size
+    canvas.height = size
+    const ctx = canvas.getContext('2d')!
+
+    const dw = displayedW.value
+    const dh = displayedH.value
+    const tx = (boxSize - dw) / 2 + crop.offsetX
+    const ty = (boxSize - dh) / 2 + crop.offsetY
+    const scale = totalScale.value
+
+    let sx = -tx / scale
+    let sy = -ty / scale
+    let sw = boxSize / scale
+    let sh = boxSize / scale
+
+    // Clamp to image bounds
+    const maxSw = crop.naturalW - sx
+    const maxSh = crop.naturalH - sy
+    sw = Math.min(sw, maxSw)
+    sh = Math.min(sh, maxSh)
+    if (sx < 0) { sw += sx; sx = 0 }
+    if (sy < 0) { sh += sy; sy = 0 }
+
+    ctx.clearRect(0, 0, size, size)
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size)
+
+    const blob: Blob = await new Promise((resolve) => canvas.toBlob(b => resolve(b!), 'image/webp', 0.9))
+    const file = new File([blob], 'avatar.webp', { type: 'image/webp' })
+    const fd = new FormData()
+    fd.append('file', file)
     const res: any = await $fetch('/api/cms/upload', { method: 'POST', body: fd })
     form.avatar = res.path
     form.remove_avatar = false
+    closeCropper()
   } catch (err: any) {
-    uploadError.value = err?.data?.message || err?.message || 'Upload failed'
+    uploadError.value = err?.data?.message || err?.message || 'Failed to process image'
   } finally {
-    if (input) input.value = ''
+    uploading.value = false
   }
 }
 
