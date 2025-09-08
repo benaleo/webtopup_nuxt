@@ -89,55 +89,55 @@ const ListMenu: MenuItem[] = [
     name: 'Profile',
     icon: 'user',
     link: '/cms/profile',
-    role: ['ADMIN', 'USER']
+    role: ['SUPERADMIN', 'ADMIN', 'USER']
   },
   {
     name: 'Users',
     icon: 'users',
     link: '/cms/users',
-    role: ['ADMIN']
+    role: ['SUPERADMIN', 'ADMIN']
   },
   {
     name: 'Transactions',
     icon: 'money-bill-transfer',
     link: '/cms/transactions',
-    role: ['ADMIN']
-  },
+    role: ['SUPERADMIN', 'ADMIN']
+  },  
   {
     name: 'Vouchers',
     icon: 'ticket',
     link: '/cms/vouchers',
-    role: ['ADMIN']
+    role: ['SUPERADMIN', 'ADMIN']
   },
   {
     name: 'Gallery',
     icon: 'image',
     link: '/cms/gallery',
-    role: ['ADMIN']
+    role: ['SUPERADMIN', 'ADMIN']
   },
   {
     name: 'Games',
     icon: 'gamepad',
     link: '/cms/games',
-    role: ['ADMIN']
+    role: ['SUPERADMIN', 'ADMIN']
   },
   {
     name: 'Payment Methods',
     icon: 'credit-card',
     link: '/cms/payment-methods',
-    role: ['ADMIN']
+    role: ['SUPERADMIN', 'ADMIN']
   },
   {
     name: 'Invoices',
     icon: 'receipt',
     link: '/cms/invoices',
-    role: ['ADMIN']
+    role: ['SUPERADMIN', 'ADMIN']
   },
   {
     name: 'Log Traffic',
     icon: 'chart-line',
     link: '/cms/log-traffic',
-    role: ['ADMIN']
+    role: ['SUPERADMIN', 'ADMIN']
   }
 ]
 
