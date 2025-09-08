@@ -26,6 +26,7 @@ model User {
   updated_at DateTime @updatedAt
 
   // open joki
+  is_popular_joki Boolean @default(false)
   is_open_joki Boolean @default(false)
   metadata_joki Json?
 
