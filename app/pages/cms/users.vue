@@ -22,6 +22,8 @@
             <th class="px-4 py-2 border-b">Name</th>
             <th class="px-4 py-2 border-b">Username</th>
             <th class="px-4 py-2 border-b">Role</th>
+            <th class="px-4 py-2 border-b">Is Joki</th>
+            <th class="px-4 py-2 border-b">Popular Joki</th>
             <th class="px-4 py-2 border-b">Active</th>
             <th class="px-4 py-2 border-b">Created</th>
             <th class="px-4 py-2 border-b text-right">Actions</th>
@@ -33,6 +35,12 @@
             <td class="px-4 py-2">{{ u.username }}</td>
             <td class="px-4 py-2">
               <span :class="roleClass(u.role)" class="px-2 py-1 rounded text-xs">{{ u.role }}</span>
+            </td>
+            <td class="px-4 py-2">
+              <span :class="u.is_open_joki ? 'text-green-700' : 'text-red-700'">{{ u.is_open_joki ? 'Yes' : 'No' }}</span>
+            </td>
+            <td class="px-4 py-2">
+              <span :class="u.is_popular_joki ? 'text-green-700' : 'text-red-700'">{{ u.is_popular_joki ? 'Yes' : 'No' }}</span>
             </td>
             <td class="px-4 py-2">
               <span :class="u.is_active ? 'text-green-700' : 'text-red-700'">{{ u.is_active ? 'Yes' : 'No' }}</span>
@@ -88,7 +96,7 @@ import { toast } from 'vue-sonner'
 definePageMeta({ layout: 'cms' })
 
 // state
-const users = ref<Array<{ id:string; name:string; username:string; role:string; is_active:boolean; created_at:string }>>([])
+const users = ref<Array<{ id:string; name:string; username:string; role:string; is_open_joki:boolean; is_popular_joki:boolean; is_active:boolean; created_at:string }>>([])
 const page = ref(1)
 const pageSize = ref(10)
 const total = ref(0)

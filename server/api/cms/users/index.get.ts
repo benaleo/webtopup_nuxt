@@ -33,6 +33,8 @@ export default defineEventHandler(async (event) => {
         name: true,
         username: true,
         role: true,
+        is_popular_joki: true,
+        is_open_joki: true,
         is_active: true,
         created_at: true,
       },
