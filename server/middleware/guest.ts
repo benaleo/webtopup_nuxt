@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   if (path.startsWith('/cms/register') || path.startsWith('/cms/login')) {
     try {
       // Check if user is already authenticated
-      const token = getCookie(event, 'auth:token')
+      const token = getCookie(event, 'auth_token')
       if (token) {
         // If user is already logged in, redirect to dashboard
         await sendRedirect(event, '/cms/dashboard')

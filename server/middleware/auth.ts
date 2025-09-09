@@ -10,9 +10,10 @@ export default defineEventHandler(async (event) => {
 
   try {
     const payload: any = await requireAuth(event)
-    // Allow USER to access only the dashboard page
-    const isDashboard = path === '/cms/dashboard'
-    const allowedRoles = isDashboard ? ['SUPERADMIN', 'ADMIN', 'USER'] : ['SUPERADMIN', 'ADMIN']
+    // Allow USER to access limited CMS pages
+    const userAllowedPaths = ['/cms/dashboard', '/cms/profile']
+    const isUserAllowedPath = userAllowedPaths.includes(path)
+    const allowedRoles = isUserAllowedPath ? ['SUPERADMIN', 'ADMIN', 'USER'] : ['SUPERADMIN', 'ADMIN']
     
     if (!payload || !allowedRoles.includes(payload.role)) {
       await sendRedirect(event, '/')

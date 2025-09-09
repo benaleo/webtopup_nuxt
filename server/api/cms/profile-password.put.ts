@@ -1,5 +1,5 @@
 import { db } from '~~/server/utils/db'
-import { requireAdmin } from './_auth'
+import { requireAuth } from '~~/server/utils/auth'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 
@@ -13,7 +13,7 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const payload: any = await requireAdmin(event)
+  const payload: any = await requireAuth(event)
   const body = await readBody(event)
   const { old_password, new_password } = schema.parse(body)
 

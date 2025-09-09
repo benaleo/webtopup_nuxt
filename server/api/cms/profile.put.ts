@@ -1,5 +1,5 @@
 import { db } from '~~/server/utils/db'
-import { requireAdmin } from './_auth'
+import { requireAuth } from '~~/server/utils/auth'
 import { z } from 'zod'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
@@ -21,7 +21,7 @@ function addDays(date: Date, days: number) {
 }
 
 export default defineEventHandler(async (event) => {
-  const payload: any = await requireAdmin(event)
+  const payload: any = await requireAuth(event)
   const body = await readBody(event)
   const { name, username, avatar, remove_avatar, is_open_joki, metadata_joki } = schema.parse(body)
 
