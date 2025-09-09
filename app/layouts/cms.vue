@@ -83,7 +83,7 @@ const ListMenu: MenuItem[] = [
     name: 'Dashboard',
     icon: 'house',
     link: '/cms/dashboard',
-    role: ['ADMIN', 'USER']
+    role: ['SUPERADMIN', 'ADMIN', 'USER']
   },
   {
     name: 'Profile',
