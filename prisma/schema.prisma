@@ -33,8 +33,9 @@ model User {
   // other
   last_username_at DateTime?
 
-  // get from transaction on Joki
+  // relations
   transactions Transaction[]
+  products Product[]
 }
 
 model Game {
@@ -56,8 +57,10 @@ model Game {
 
 model Product {
   id          String   @id @default(uuid())
-  game_id     String
-  game        Game     @relation(fields: [game_id], references: [id], onDelete: Cascade)
+  game_id     String?
+  game        Game?     @relation(fields: [game_id], references: [id], onDelete: Cascade)
+  joki_id     String?
+  joki        User?     @relation(fields: [joki_id], references: [id], onDelete: Cascade)
   name        String
   value       String
   price       Float
