@@ -47,14 +47,30 @@
             </td>
             <td class="px-4 py-2">{{ formatDate(u.created_at) }}</td>
             <td class="px-4 py-2 text-right">
-              <button
-                class="px-2 py-1 text-xs rounded border"
-                :class="u.is_active ? 'border-red-300 text-red-700 hover:bg-red-50' : 'border-green-300 text-green-700 hover:bg-green-50'"
-                @click="toggleActive(u)"
-                :disabled="togglingId === u.id"
-              >
-                {{ u.is_active ? 'Deactivate' : 'Activate' }}
-              </button>
+              <div class="inline-flex items-center gap-2">
+                <button
+                  class="px-2 py-1 text-xs rounded border"
+                  :class="u.is_active ? 'border-red-300 text-red-700 hover:bg-red-50' : 'border-green-300 text-green-700 hover:bg-green-50'"
+                  @click="toggleActive(u)"
+                  :disabled="togglingId === u.id"
+                >
+                  {{ u.is_active ? 'Deactivate' : 'Activate' }}
+                </button>
+                <button
+                  v-if="u.role === 'USER'"
+                  class="px-2 py-1 text-xs rounded border"
+                  :class="[
+                    u.is_open_joki
+                      ? (u.is_popular_joki ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-blue-300 text-blue-700 hover:bg-blue-50')
+                      : 'border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed'
+                  ]"
+                  :title="u.is_open_joki ? '' : 'User is not open to Joki'"
+                  @click="u.is_open_joki && togglePopular(u)"
+                  :disabled="togglingPopularId === u.id || !u.is_open_joki"
+                >
+                  {{ u.is_popular_joki ? 'Unmark Popular' : 'Mark Popular' }}
+                </button>
+              </div>
             </td>
           </tr>
           <tr v-if="!loading && users.length === 0">
@@ -103,6 +119,7 @@ const total = ref(0)
 const search = ref('')
 const loading = ref(true)
 const togglingId = ref<string | null>(null)
+const togglingPopularId = ref<string | null>(null)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 
@@ -170,6 +187,21 @@ async function toggleActive(u: { id:string; is_active:boolean }) {
     toast.error(e?.data?.message || e?.message || 'Failed to toggle user')
   } finally {
     togglingId.value = null
+  }
+}
+
+async function togglePopular(u: { id:string; is_open_joki:boolean; is_popular_joki:boolean }) {
+  if (!u.is_open_joki) return
+  if (togglingPopularId.value) return
+  togglingPopularId.value = u.id
+  try {
+    const res = await $fetch<{ id:string; is_popular_joki:boolean }>(`/api/cms/users/${u.id}/toggle-popular`, { method: 'PUT' })
+    u.is_popular_joki = res.is_popular_joki
+    toast.success(`User ${res.is_popular_joki ? 'marked as popular' : 'unmarked from popular'}`)
+  } catch (e: any) {
+    toast.error(e?.data?.message || e?.message || 'Failed to toggle popular joki')
+  } finally {
+    togglingPopularId.value = null
   }
 }
 
