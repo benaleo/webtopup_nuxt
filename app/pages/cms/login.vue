@@ -7,6 +7,7 @@
         <input v-model="password" type="password" placeholder="Password" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none" />
         <button :disabled="pending" class="w-full px-4 py-2 rounded-lg bg-blue-600 text-white">{{ pending ? 'Memproses...' : 'Masuk' }}</button>
         <p v-if="error" class="text-red-600 text-sm">{{ (error as any).data?.message || 'Gagal login' }}</p>
+        <p class="text-sm text-gray-600">Belum punya akun? <NuxtLink class="text-blue-600 hover:underline" to="/cms/register">Daftar</NuxtLink></p>
       </div>
     </form>
   </section>

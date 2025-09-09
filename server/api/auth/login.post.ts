@@ -20,7 +20,8 @@ export default defineEventHandler(async (event) => {
   const ok = await bcrypt.compare(password, user.password)
   if (!ok) throw createError({ statusCode: 401, message: 'Invalid credentials' })
 
-  if (!(user.role === 'SUPERADMIN' || user.role === 'ADMIN')) {
+  // Allow SUPERADMIN, ADMIN, and USER to log in
+  if (!(user.role === 'SUPERADMIN' || user.role === 'ADMIN' || user.role === 'USER')) {
     throw createError({ statusCode: 403, message: 'Insufficient role' })
   }
 

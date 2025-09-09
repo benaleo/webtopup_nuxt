@@ -51,7 +51,7 @@
             class="px-2 py-1 text-[10px] bg-gray-200 rounded-xl"
             @click="goTopup()"
           >
-            Topup
+            Topup & Joki
           </button>
           <button
             class="px-2 py-1 text-[10px] bg-gray-200 rounded-xl"

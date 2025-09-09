@@ -2,10 +2,24 @@ import { requireAuth } from '~~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   const path = event.path || ''
-  if (path.startsWith('/cms') && path !== '/cms/login') {
+  // Skip middleware for public paths
+  const publicPaths = ['/cms/login', '/cms/register']
+  if (publicPaths.includes(path) || !path.startsWith('/cms')) {
+    return
+  }
+
+  try {
     const payload: any = await requireAuth(event)
-    if (!payload || !['SUPERADMIN', 'ADMIN'].includes(payload.role)) {
-      throw createError({ statusCode: 403, message: 'Forbidden' })
+    // Allow USER to access limited CMS pages
+    const userAllowedPaths = ['/cms/dashboard', '/cms/profile']
+    const isUserAllowedPath = userAllowedPaths.includes(path)
+    const allowedRoles = isUserAllowedPath ? ['SUPERADMIN', 'ADMIN', 'USER'] : ['SUPERADMIN', 'ADMIN']
+    
+    if (!payload || !allowedRoles.includes(payload.role)) {
+      await sendRedirect(event, '/')
     }
+  } catch (error) {
+    // If any error occurs (including 401 from requireAuth), redirect to main endpoint
+    await sendRedirect(event, '/')
   }
 })

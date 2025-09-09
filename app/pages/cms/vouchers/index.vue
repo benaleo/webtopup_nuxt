@@ -168,10 +168,22 @@ function goPage(p: number) { page.value = p }
 const showForm = ref(false)
 const editing = ref(false)
 const currentId = ref<string | null>(null)
-const types = ['AMOUNT', 'PERCENTAGE']
+const types = ['AMOUNT', 'PERCENTAGE'] as const
+
+type VoucherForm = {
+  name: string
+  code: string
+  amount: number
+  stock: number
+  minimum: number
+  type: typeof types[number]
+  valid_at: string
+  valid_until: string
+  is_active: boolean
+}
 
 // we'll bind datetime-local as local string and convert to ISO on submit
-const form = reactive<{ name: string; code: string; amount: number; stock: number; minimum: number; type: string; valid_at: string; valid_until: string; is_active: boolean }>({
+const form = reactive<VoucherForm>({
   name: '',
   code: '',
   amount: 0,
@@ -268,11 +280,11 @@ function toISO(local: string) {
   return new Date(dt.getTime() - dt.getTimezoneOffset() * 60000).toISOString()
 }
 
-function localNowInput(addHours = 0) {
+function localNowInput(addHours = 0): string {
   const now = new Date()
   now.setHours(now.getHours() + addHours)
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
-  return now.toISOString().slice(0,16)
+  return now.toISOString().slice(0, 16) || ''
 }
 
 </script>

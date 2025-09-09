@@ -18,74 +18,14 @@
         </div>
         <nav class="flex-1 p-2">
           <ul class="space-y-1 text-sm">
-            <li>
+            <li v-for="menu in filteredMenu" :key="menu.name" v-if="!loading">
               <NuxtLink
-                to="/cms/dashboard"
+                :to="menu.link"
                 class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
                 active-class="bg-gray-100 font-medium"
               >
-                <span>🏠</span>
-                <span>Dashboard</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/gallery"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>📸</span>
-                <span>Gallery</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/games"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>🎮</span>
-                <span>Game</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/payment-methods"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>💰</span>
-                <span>Payment Methods</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/vouchers"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>🎁</span>
-                <span>Voucher</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/invoices"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>🧾</span>
-                <span>Invoices</span>
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/cms/log-traffic"
-                class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
-                active-class="bg-gray-100 font-medium"
-              >
-                <span>📈</span>
-                <span>Log Traffic</span>
+                <span><i :class="`fa-solid fa-${menu.icon}`"></i></span>
+                <span>{{ menu.name }}</span>
               </NuxtLink>
             </li>
           </ul>
@@ -123,8 +63,104 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import NavbarCms from '~/components/NavbarCms.vue';
+import { type User } from '~~/types/app.types';
 
+interface MenuItem {
+  name: string;
+  icon: string;
+  link: string;
+  role: string[];
+}
+
+const user = ref<User | null>(null);
+const loading = ref(true);
+const role = ref<string | null>(null)
+
+const ListMenu: MenuItem[] = [
+  {
+    name: 'Dashboard',
+    icon: 'house',
+    link: '/cms/dashboard',
+    role: ['SUPERADMIN', 'ADMIN', 'USER']
+  },
+  {
+    name: 'Profile',
+    icon: 'user',
+    link: '/cms/profile',
+    role: ['SUPERADMIN', 'ADMIN', 'USER']
+  },
+  {
+    name: 'Users',
+    icon: 'users',
+    link: '/cms/users',
+    role: ['SUPERADMIN', 'ADMIN']
+  },
+  {
+    name: 'Transactions',
+    icon: 'money-bill-transfer',
+    link: '/cms/transactions',
+    role: ['SUPERADMIN', 'ADMIN']
+  },  
+  {
+    name: 'Vouchers',
+    icon: 'ticket',
+    link: '/cms/vouchers',
+    role: ['SUPERADMIN', 'ADMIN']
+  },
+  {
+    name: 'Gallery',
+    icon: 'image',
+    link: '/cms/gallery',
+    role: ['SUPERADMIN', 'ADMIN']
+  },
+  {
+    name: 'Games',
+    icon: 'gamepad',
+    link: '/cms/games',
+    role: ['SUPERADMIN', 'ADMIN']
+  },
+  {
+    name: 'Payment Methods',
+    icon: 'credit-card',
+    link: '/cms/payment-methods',
+    role: ['SUPERADMIN', 'ADMIN']
+  },
+  {
+    name: 'Invoices',
+    icon: 'receipt',
+    link: '/cms/invoices',
+    role: ['SUPERADMIN', 'ADMIN']
+  },
+  {
+    name: 'Log Traffic',
+    icon: 'chart-line',
+    link: '/cms/log-traffic',
+    role: ['SUPERADMIN', 'ADMIN']
+  }
+]
+
+// Fetch current user data
+onMounted(async () => {
+  try {
+    const res = await $fetch<{ user: User | null }>('/api/auth/me');
+    user.value = res?.user || null;
+    role.value = res?.user?.role || null;
+  } catch (error) {
+    console.error('Failed to fetch user data:', error);
+  } finally {
+    loading.value = false;
+  }
+});
+
+// Filter menu items based on user role
+const filteredMenu = computed<MenuItem[]>(() => {
+  if (!user.value?.role) return [];
+  return ListMenu.filter(menu => menu.role.includes(user.value?.role || ''));
+});
+
+// Logout function
 async function logout() {
   await $fetch("/api/auth/logout", { method: "POST" });
   await navigateTo("/cms/login");

@@ -19,8 +19,10 @@
         <div v-else-if="error" class="text-red-600">
           {{ (error as any).data?.message || "Terjadi kesalahan" }}
         </div>
+        
+        <!-- Single item view -->
         <div v-else-if="item">
-          <div :class="item.is_success ? 'bg-green-100' : (item.reason === '' || item.reason === null ? 'bg-yellow-100' : 'bg-red-100')" class=" rounded-xl border p-4">
+          <div :class="item.is_success ? 'bg-green-100' : (item.reason === '' || item.reason === null ? 'bg-yellow-100' : 'bg-red-100')" class="rounded-xl border p-4">
             <p><span class="font-medium">Invoice:</span> {{ item.invoice }}</p>
             <p><span class="font-medium">Email:</span> {{ item.email }}</p>
             <p><span class="font-medium">Phone:</span> {{ item.phone }}</p>
@@ -39,6 +41,30 @@
               <span class="font-medium">Alasan:</span> {{ item.reason }}
             </p>
           </div>
+        </div>
+        
+        <!-- Multiple items view -->
+        <div v-else-if="items.length">
+          <h2 class="text-lg font-semibold mb-4">Daftar Transaksi Terbaru</h2>
+          <div v-for="transaction in items" :key="transaction.id" class="mb-4 p-4 border rounded-lg">
+            <div :class="transaction.is_success ? 'bg-green-50' : (transaction.reason === '' || transaction.reason === null ? 'bg-yellow-50' : 'bg-red-50')">
+              <p><span class="font-medium">Invoice:</span> {{ transaction.invoice }}</p>
+              <p><span class="font-medium">Produk:</span> {{ transaction.product_name }} x {{ transaction.qty }}</p>
+              <p><span class="font-medium">Total:</span> Rp {{ new Intl.NumberFormat("id-ID").format(transaction.total_payment) }}</p>
+              <p><span class="font-medium">Status:</span> {{ transaction.is_success ? "Success" : (transaction.reason === "" || transaction.reason === null ? "Pending" : "Failed") }}</p>
+              <button 
+                @click="invoice = transaction.invoice; refresh()"
+                class="mt-2 text-blue-600 hover:underline"
+              >
+                Lihat Detail
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- No results -->
+        <div v-else class="text-gray-500">
+          Tidak ada transaksi yang ditemukan
         </div>
       </div>
 
@@ -72,7 +98,16 @@ const { data, pending, error, refresh } = await useFetch("/api/transactions", {
   immediate: !!invoice.value,
 });
 
-const item = computed(() => data.value?.item);
+// Handle both single item and multiple items cases
+const item = computed(() => {
+  if (!data.value) return null;
+  return 'item' in data.value ? data.value.item : null;
+});
+
+const items = computed(() => {
+  if (!data.value) return [];
+  return 'items' in data.value ? data.value.items : [];
+});
 
 function onSearch() {
   refresh();

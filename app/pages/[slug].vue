@@ -94,7 +94,7 @@
             <div class="mt-3 space-y-3" v-else>
               <div v-for="cat in categories" :key="cat.value">
                 <details
-                  v-if="pmsByCategory?.[cat.value]?.length > 0"
+                  v-if="(pmsByCategory?.[cat.value]?.length || 0) > 0"
                   class="border rounded"
                   :open="!!openCategories[cat.value]"
                   @toggle="openCategories[cat.value] = !openCategories[cat.value]"
